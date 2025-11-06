@@ -17,7 +17,7 @@ const areasData = [
 const Home_Admin = () => {
       const [currentPage, setCurrentPage] = useState(1);
       const [searchTerm, setSearchTerm] = useState("");
-      const itemsPerPage = 5;
+      const itemsPerPage = 10;
     
       const handleSearch = (searchText) => setSearchTerm(searchText);
     

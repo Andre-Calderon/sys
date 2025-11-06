@@ -13,7 +13,7 @@ const Departamento = () => {
   const [deletingId, setDeletingId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
   const handleSearch = (searchText) => setSearchTerm(searchText);
   const handlePageChange = (event, value) => setCurrentPage(value);
@@ -112,7 +112,7 @@ const Departamento = () => {
                   <tr className="text-center">
                     <th>ID</th>
                     <th>Nombre del Departamento</th>
-                    <th>Áreas</th>
+                    <th>Áreas Específicas</th>
                     <th>Fecha y Hora de Alta</th>
                     <th>Acciones</th>
                   </tr>
@@ -133,7 +133,7 @@ const Departamento = () => {
                               ))}
                             </ul>
                           ) : (
-                            "Sin áreas"
+                            "Sin áreas específicas"
                           )}
                         </td>
                         <td>{new Date(dep.created_at).toLocaleString("es-MX")}</td>

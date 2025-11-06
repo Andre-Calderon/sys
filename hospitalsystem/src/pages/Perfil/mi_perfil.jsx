@@ -12,7 +12,8 @@ import {
   CircularProgress,
   Alert,
   Card,
-  CardContent
+  CardContent,
+  Divider
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../../config/api";
@@ -29,7 +30,9 @@ const Mi_Perfil = () => {
     telefono: "",
     email: "",
     genero: "",
-    pass: ""
+    pass: "",
+    nueva_password: "",
+    confirmar_password: ""
   });
 
   const [originalValues, setOriginalValues] = useState({});
@@ -143,14 +146,22 @@ const Mi_Perfil = () => {
   }, [user]);
 
   const loadUserData = (data) => {
+    // Convertir genero de número a boolean (1 = true, 0 = false)
+    let generoValue = "";
+    if (data.genero !== null && data.genero !== undefined && data.genero !== "") {
+      generoValue = data.genero === 1 || data.genero === true || data.genero === "1";
+    }
+    
     const userData = {
       nombres: data.nombres || "",
       apellido_paterno: data.apellido_paterno || "",
       apellido_materno: data.apellido_materno || "",
       telefono: data.telefono || "",
       email: data.email || "",
-      genero: data.genero ?? "",
-      pass: ""
+      genero: generoValue,
+      pass: "",
+      nueva_password: "",
+      confirmar_password: ""
     };
     setFormValues(userData);
     setOriginalValues(userData);
@@ -178,61 +189,112 @@ const Mi_Perfil = () => {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("Usuario no autenticado");
 
-      // Solo enviar campos modificados
+      // Validar que si hay nueva contraseña, ambas estén llenas y coincidan
+      if (formValues.nueva_password || formValues.confirmar_password) {
+        if (!formValues.nueva_password || !formValues.confirmar_password) {
+          setErrorMsg("Debe completar ambos campos de contraseña");
+          setSubmitting(false);
+          return;
+        }
+        if (formValues.nueva_password !== formValues.confirmar_password) {
+          setErrorMsg("Las contraseñas no coinciden");
+          setSubmitting(false);
+          return;
+        }
+      }
+
+      // Si hay nueva contraseña, llamar al endpoint de reset-password
+      if (formValues.nueva_password && formValues.confirmar_password) {
+        try {
+          const resetRes = await fetch(
+            `${API_URL}/reset-password`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                email: formValues.email,
+                password: formValues.nueva_password,
+                password_confirmation: formValues.confirmar_password
+              })
+            }
+          );
+
+          if (!resetRes.ok) {
+            const errorData = await resetRes.json();
+            throw new Error(errorData.message || "Error al cambiar la contraseña");
+          }
+        } catch (resetErr) {
+          setErrorMsg(resetErr.message || "Error al cambiar la contraseña");
+          setSubmitting(false);
+          return;
+        }
+      }
+
+      // Solo enviar campos modificados (sin incluir las contraseñas)
       const body = {};
       Object.keys(formValues).forEach((key) => {
-        if (formValues[key] !== originalValues[key]) {
-          body[key] = formValues[key];
+        // Excluir campos de contraseña del body normal
+        if (key !== "nueva_password" && key !== "confirmar_password" && key !== "pass") {
+          if (formValues[key] !== originalValues[key]) {
+            body[key] = formValues[key];
+          }
         }
       });
 
-      // Asegurar tipo boolean para genero
+      // Asegurar tipo correcto para genero (1 = true/masculino, 0 = false/femenino)
       if ("genero" in body) {
-        body.genero = body.genero === true || body.genero === "true";
+        // Convertir a número: true -> 1, false -> 0
+        body.genero = body.genero === true || body.genero === "true" || body.genero === 1 ? 1 : 0;
       }
 
-      // Omitir password vacía
-      if (!body.pass || body.pass.trim() === "") {
-        delete body.pass;
-      }
+      // Solo hacer PUT si hay cambios en otros campos
+      if (Object.keys(body).length > 0) {
+        // Determinar endpoint según tipo de usuario
+        const endpoint = userType === "administrador"
+          ? `${API_URL}/administradores/${userId}`
+          : `${API_URL}/ingenieros/${userId}`;
 
-      if (Object.keys(body).length === 0) {
+        const res = await fetch(endpoint, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(body)
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || "Error al actualizar perfil");
+        }
+
+        const result = await res.json();
+
+        if (!result.has_error) {
+          setSuccessMsg("Perfil actualizado correctamente");
+          
+          // Actualizar datos en el contexto si es necesario
+          // Recargar datos después de actualizar
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+        } else {
+          setErrorMsg(result.message || "No se pudo actualizar el perfil");
+        }
+      } else if (!formValues.nueva_password && !formValues.confirmar_password) {
+        // Si no hay cambios y no hay contraseña nueva, mostrar mensaje
         setSuccessMsg("No hay cambios para actualizar");
         setSubmitting(false);
         return;
-      }
-
-      // Determinar endpoint según tipo de usuario
-      const endpoint = userType === "administrador"
-        ? `${API_URL}/administradores/${userId}`
-        : `${API_URL}/ingenieros/${userId}`;
-
-      const res = await fetch(endpoint, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(body)
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Error al actualizar perfil");
-      }
-
-      const result = await res.json();
-
-      if (!result.has_error) {
+      } else {
+        // Si solo se cambió la contraseña, mostrar éxito
         setSuccessMsg("Perfil actualizado correctamente");
-        
-        // Actualizar datos en el contexto si es necesario
-        // Recargar datos después de actualizar
         setTimeout(() => {
           window.location.reload();
         }, 1500);
-      } else {
-        setErrorMsg(result.message || "No se pudo actualizar el perfil");
       }
     } catch (err) {
       console.error(err);
@@ -279,7 +341,9 @@ const Mi_Perfil = () => {
               display: "flex",
               flexDirection: "column",
               gap: 3,
-              "& .MuiFormControl-root": { width: "100%" },
+              "& .MuiFormControl-root": { 
+                width: "100%"
+              },
               "& .MuiOutlinedInput-root": {
                 "& fieldset": { borderColor: "var(--color-primary)" },
                 "&:hover fieldset": { borderColor: "var(--color-primary)" },
@@ -289,6 +353,7 @@ const Mi_Perfil = () => {
             }}
           >
             <Grid container spacing={3}>
+              {/* Primera fila: Nombres y Apellido Paterno */}
               <Grid item xs={12} sm={6}>
                 <TextField
                   name="nombres"
@@ -299,6 +364,11 @@ const Mi_Perfil = () => {
                   label="Nombres"
                   variant="outlined"
                   fullWidth
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      height: "56px"
+                    }
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -311,9 +381,15 @@ const Mi_Perfil = () => {
                   label="Apellido Paterno"
                   variant="outlined"
                   fullWidth
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      height: "56px"
+                    }
+                  }}
                 />
               </Grid>
-              <Grid item xs={12} sm={4}>
+              {/* Segunda fila: Apellido Materno y Teléfono */}
+              <Grid item xs={12} sm={6}>
                 <TextField
                   name="apellido_materno"
                   value={formValues.apellido_materno}
@@ -323,9 +399,14 @@ const Mi_Perfil = () => {
                   label="Apellido Materno"
                   variant="outlined"
                   fullWidth
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      height: "56px"
+                    }
+                  }}
                 />
               </Grid>
-              <Grid item xs={12} sm={4}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   name="telefono"
                   value={formValues.telefono}
@@ -335,9 +416,15 @@ const Mi_Perfil = () => {
                   label="Número de teléfono"
                   variant="outlined"
                   fullWidth
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      height: "56px"
+                    }
+                  }}
                 />
               </Grid>
-              <Grid item xs={12} sm={4}>
+              {/* Tercera fila: Email y Género */}
+              <Grid item xs={12} sm={6}>
                 <TextField
                   name="email"
                   value={formValues.email}
@@ -347,10 +434,37 @@ const Mi_Perfil = () => {
                   label="Correo electrónico"
                   variant="outlined"
                   fullWidth
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      height: "56px"
+                    }
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
+                <FormControl 
+                  fullWidth 
+                  variant="outlined"
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      height: "56px",
+                      "& fieldset": {
+                        borderColor: "var(--color-primary)"
+                      },
+                      "&:hover fieldset": {
+                        borderColor: "var(--color-primary)"
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: "var(--color-secondary)"
+                      }
+                    },
+                    "& .MuiInputLabel-root": {
+                      "&.Mui-focused": {
+                        color: "var(--color-secondary)"
+                      }
+                    }
+                  }}
+                >
                   <InputLabel id="genero-label">Género</InputLabel>
                   <Select
                     labelId="genero-label"
@@ -364,19 +478,49 @@ const Mi_Perfil = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  name="pass"
-                  value={formValues.pass}
-                  onChange={handleChange}
-                  type="password"
-                  label="Nueva contraseña (opcional)"
-                  variant="outlined"
-                  fullWidth
-                  helperText="Deja este campo vacío si no deseas cambiar la contraseña"
-                />
-              </Grid>
             </Grid>
+
+            {/* Separador y sección de contraseñas */}
+            <Box sx={{ mt: 4, mb: 2 }}>
+              <Divider sx={{ mb: 3 }} />
+              <Typography variant="h6" sx={{ mb: 3, color: "var(--color-primary)", fontWeight: "bold", textAlign: "center" }}>
+                Restablecer contraseña
+              </Typography>
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    name="nueva_password"
+                    value={formValues.nueva_password}
+                    onChange={handleChange}
+                    type="password"
+                    label="Nueva contraseña"
+                    variant="outlined"
+                    fullWidth
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        height: "56px"
+                      }
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    name="confirmar_password"
+                    value={formValues.confirmar_password}
+                    onChange={handleChange}
+                    type="password"
+                    label="Confirmar nueva contraseña"
+                    variant="outlined"
+                    fullWidth
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        height: "56px"
+                      }
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </Box>
 
             <Box display="flex" justifyContent="center" gap={2} mt={3}>
               <Button

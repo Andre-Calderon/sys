@@ -9,7 +9,8 @@ import {
   Select,
   InputLabel,
   FormControl,
-  CircularProgress
+  CircularProgress,
+  Alert
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import { API_URL } from "../../config/api";
@@ -25,11 +26,15 @@ const Edit_User = () => {
     telefono: "",
     email: "",
     genero: "",
-    pass: ""
+    pass: "",
+    nueva_password: "",
+    confirmar_password: ""
   });
 
   const [originalValues, setOriginalValues] = useState({});
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   // GET datos del ingeniero
   useEffect(() => {
@@ -53,7 +58,9 @@ const Edit_User = () => {
           telefono: data.data.telefono || "",
           email: data.data.email || "",
           genero: data.data.genero ?? "",
-          pass: "" // no traemos contraseña
+          pass: "", // no traemos contraseña
+          nueva_password: "",
+          confirmar_password: ""
         };
         setFormValues(userData);
         setOriginalValues(userData); // guardamos los originales para comparar
@@ -77,40 +84,94 @@ const Edit_User = () => {
   // PUT solo con cambios
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
+    setErrorMsg("");
+
     try {
       const token = localStorage.getItem("token");
-
-      // solo enviamos campos que cambiaron
-      const body = {};
-      Object.keys(formValues).forEach((key) => {
-        if (formValues[key] !== originalValues[key]) {
-          body[key] = formValues[key];
-        }
-      });
-
-      console.log("Payload enviado al PUT:", body);
-
-      if (Object.keys(body).length === 0) {
-        console.log("No hay cambios para actualizar");
+      if (!token) {
+        setErrorMsg("Usuario no autenticado");
+        setSubmitting(false);
         return;
       }
 
-      const res = await fetch(
-        `${API_URL}/ingenieros/${id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify(body)
+      // Validar que si hay nueva contraseña, ambas estén llenas y coincidan
+      if (formValues.nueva_password || formValues.confirmar_password) {
+        if (!formValues.nueva_password || !formValues.confirmar_password) {
+          setErrorMsg("Debe completar ambos campos de contraseña");
+          setSubmitting(false);
+          return;
         }
-      );
-      if (!res.ok) throw new Error("Error al actualizar");
+        if (formValues.nueva_password !== formValues.confirmar_password) {
+          setErrorMsg("Las contraseñas no coinciden");
+          setSubmitting(false);
+          return;
+        }
+      }
+
+      // Si hay nueva contraseña, llamar al endpoint de reset-password
+      if (formValues.nueva_password && formValues.confirmar_password) {
+        try {
+          const resetRes = await fetch(
+            `${API_URL}/reset-password`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                email: formValues.email,
+                password: formValues.nueva_password,
+                password_confirmation: formValues.confirmar_password
+              })
+            }
+          );
+
+          if (!resetRes.ok) {
+            const errorData = await resetRes.json();
+            throw new Error(errorData.message || "Error al cambiar la contraseña");
+          }
+        } catch (resetErr) {
+          setErrorMsg(resetErr.message || "Error al cambiar la contraseña");
+          setSubmitting(false);
+          return;
+        }
+      }
+
+      // Actualizar datos del usuario (sin incluir las contraseñas)
+      const body = {};
+      Object.keys(formValues).forEach((key) => {
+        // Excluir campos de contraseña del body normal
+        if (key !== "nueva_password" && key !== "confirmar_password" && key !== "pass") {
+          if (formValues[key] !== originalValues[key]) {
+            body[key] = formValues[key];
+          }
+        }
+      });
+
+      // Solo hacer PUT si hay cambios en otros campos
+      if (Object.keys(body).length > 0) {
+        const res = await fetch(
+          `${API_URL}/ingenieros/${id}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(body)
+          }
+        );
+        if (!res.ok) throw new Error("Error al actualizar");
+      }
 
       navigate("/registro_ingenieros");
     } catch (err) {
       console.error(err);
+      setErrorMsg(err.message || "Error al actualizar");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -122,6 +183,8 @@ const Edit_User = () => {
         <Typography variant="h5" gutterBottom className="p-3 text-center">
           Actualizar información de usuario
         </Typography>
+
+        {errorMsg && <Alert severity="error" sx={{ mb: 2, mx: 3 }}>{errorMsg}</Alert>}
 
         <Box
           component="form"
@@ -169,7 +232,7 @@ const Edit_User = () => {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 name="apellido_materno"
                 value={formValues.apellido_materno}
@@ -181,7 +244,7 @@ const Edit_User = () => {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 name="telefono"
                 value={formValues.telefono}
@@ -193,7 +256,7 @@ const Edit_User = () => {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 name="email"
                 value={formValues.email}
@@ -219,15 +282,26 @@ const Edit_User = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6} style={{ display: "none" }}>
+            <Grid item xs={12} sm={6}>
               <TextField
-                name="pass"
-                value={formValues.pass}
+                name="nueva_password"
+                value={formValues.nueva_password}
+                onChange={handleChange}
                 type="password"
-                label="Contraseña"
+                label="Nueva contraseña"
                 variant="outlined"
                 fullWidth
-                disabled
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                name="confirmar_password"
+                value={formValues.confirmar_password}
+                onChange={handleChange}
+                type="password"
+                label="Confirmar nueva contraseña"
+                variant="outlined"
+                fullWidth
               />
             </Grid>
           </Grid>
@@ -236,14 +310,14 @@ const Edit_User = () => {
               <Button
                 type="submit"
                 variant="contained"
-                disabled={loading}
+                disabled={loading || submitting}
                 sx={{
                   width: "50%",
                   backgroundColor: "var(--color-primary)",
                   "&:hover": { backgroundColor: "var(--color-primary)" }
                 }}
               >
-                {loading ? (
+                {loading || submitting ? (
                   <CircularProgress size={24} color="inherit" />
                 ) : (
                   "GUARDAR DATOS"

@@ -164,7 +164,7 @@ const Edit_Dashboard = () => {
 
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
-                <InputLabel>Área</InputLabel>
+                <InputLabel>Área Específica</InputLabel>
                 <Select
                   name="area_id"
                   value={formData.area_id}

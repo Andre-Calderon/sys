@@ -18,7 +18,7 @@ const Table_Correctivo = () => {
           const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
           const [deleteItemId, setDeleteItemId] = useState(null); // Estado para almacenar el ID del item a eliminar
           const [tabValue, setTabValue] = useState(0);
-          const itemsPerPage = 5;
+          const itemsPerPage = 10;
         
           const data = [
             {

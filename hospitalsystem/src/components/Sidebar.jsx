@@ -57,7 +57,7 @@ const menuItems_OPCION_A = [
     icon: <Apartment style={{color:"var(--color-primary)"}} />, 
     subMenu: [
       { text: "Departamentos", icon: <Apartment style={{color:"var(--color-secondary)"}} />,  path:"/departamentos", roles:["administrador"] },
-      { text: "Áreas", icon: <AssuredWorkload style={{color:"var(--color-secondary)"}} />,  path:"/areas", roles:["administrador"] },
+      { text: "Áreas Específicas", icon: <AssuredWorkload style={{color:"var(--color-secondary)"}} />,  path:"/areas", roles:["administrador"] },
     ],
     module: "gestion"
   },
@@ -129,7 +129,7 @@ const menuItems_OPCION_B = [
     icon: <Apartment style={{color:"var(--color-primary)"}} />, 
     subMenu: [
       { text: "Departamentos", icon: <Apartment style={{color:"var(--color-secondary)"}} />,  path:"/departamentos", roles:["administrador"] },
-      { text: "Áreas", icon: <AssuredWorkload style={{color:"var(--color-secondary)"}} />,  path:"/areas", roles:["administrador"] },
+      { text: "Áreas Específicas", icon: <AssuredWorkload style={{color:"var(--color-secondary)"}} />,  path:"/areas", roles:["administrador"] },
     ],
     priority: "configuracion"
   },
@@ -176,7 +176,7 @@ const menuItems_OPCION_C = [
     icon: <Apartment style={{color:"var(--color-primary)"}} />, 
     subMenu: [
       { text: "Departamentos", icon: <Apartment style={{color:"var(--color-secondary)"}} />,  path:"/departamentos", roles:["administrador"] },
-      { text: "Áreas", icon: <AssuredWorkload style={{color:"var(--color-secondary)"}} />,  path:"/areas", roles:["administrador"] },
+      { text: "Áreas Específicas", icon: <AssuredWorkload style={{color:"var(--color-secondary)"}} />,  path:"/areas", roles:["administrador"] },
     ],
     flow: "planificacion"
   },
@@ -262,7 +262,7 @@ const menuItems_OPCION_D = [
     icon: <Apartment style={{color:"var(--color-primary)"}} />, 
     subMenu: [
       { text: "Departamentos", icon: <Apartment style={{color:"var(--color-secondary)"}} />,  path:"/departamentos", roles:["administrador"] },
-      { text: "Áreas", icon: <AssuredWorkload style={{color:"var(--color-secondary)"}} />,  path:"/areas", roles:["administrador"] },
+      { text: "Áreas Específicas", icon: <AssuredWorkload style={{color:"var(--color-secondary)"}} />,  path:"/areas", roles:["administrador"] },
     ],
   },
   {

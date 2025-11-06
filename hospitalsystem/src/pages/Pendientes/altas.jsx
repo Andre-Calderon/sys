@@ -14,7 +14,7 @@ import { Link } from "react-router";
 const Altas_Pendientes = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
   const data = [
     {

@@ -13,7 +13,7 @@ import Paginacion from "../../components/Pagination";
 const Table_Pendientes = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
   const data = [
     {

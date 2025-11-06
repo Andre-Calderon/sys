@@ -33,7 +33,7 @@ const Edit_Area = () => {
             headers: { Authorization: `Bearer ${token}` }
           }
         );
-        if (!res.ok) throw new Error("Error al obtener el área");
+        if (!res.ok) throw new Error("Error al obtener el área específica");
         const data = await res.json();
 
         const areaData = {
@@ -91,7 +91,7 @@ const Edit_Area = () => {
           body: JSON.stringify(body)
         }
       );
-      if (!res.ok) throw new Error("Error al actualizar el área");
+      if (!res.ok) throw new Error("Error al actualizar el área específica");
 
       navigate("/areas"); // redirige a listado de áreas
     } catch (err) {
@@ -105,7 +105,7 @@ const Edit_Area = () => {
     <div className="right-content">
       <div className="card">
         <Typography variant="h5" gutterBottom className="p-3 text-center">
-          Actualizar información del área
+          Actualizar información del área específica
         </Typography>
 
         <Box
@@ -135,7 +135,7 @@ const Edit_Area = () => {
                 onChange={handleChange}
                 required
                 type="text"
-                label="Nombre del área"
+                label="Nombre del área específica"
                 variant="outlined"
                 fullWidth
               />
@@ -147,7 +147,7 @@ const Edit_Area = () => {
                 onChange={handleChange}
                 required
                 type="text"
-                label="Nombre del encargado del área"
+                label="Nombre del encargado del área específica"
                 variant="outlined"
                 fullWidth
               />

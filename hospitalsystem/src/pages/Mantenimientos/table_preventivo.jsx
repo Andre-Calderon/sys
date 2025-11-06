@@ -10,7 +10,7 @@ const Table_Preventivo = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [deleteItemId, setDeleteItemId] = useState(null);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
   const data = [
     {

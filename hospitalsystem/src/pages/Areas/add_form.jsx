@@ -84,11 +84,11 @@ const Add_Area = () => {
       const result = await response.json();
 
       if (response.ok && !result.has_error) {
-        setSuccessMsg("Área creada exitosamente");
+        setSuccessMsg("Área específica creada exitosamente");
         setFormValues({ departamento_id: "", nombre: "", nombre_encargado: "" });
         setTimeout(() => navigate("/areas"), 2000);
       } else {
-        setErrorMsg(result.message || "Error al crear el área");
+        setErrorMsg(result.message || "Error al crear el área específica");
       }
     } catch (error) {
       console.error("Error al crear área:", error);
@@ -102,7 +102,7 @@ const Add_Area = () => {
     <div className="right-content">
       <div className="card">
         <Typography variant="h5" gutterBottom className="p-3 text-center">
-          Agregar información del área
+          Agregar información del área específica
         </Typography>
 
         {successMsg && <Alert severity="success">{successMsg}</Alert>}
@@ -156,7 +156,7 @@ const Add_Area = () => {
               <TextField
                 required
                 type="text"
-                label="Nombre del área"
+                label="Nombre del área específica"
                 name="nombre"
                 value={formValues.nombre}
                 onChange={handleChange}
@@ -167,7 +167,7 @@ const Add_Area = () => {
               <TextField
                 required
                 type="text"
-                label="Nombre del encargado del área"
+                label="Nombre del encargado del área específica"
                 name="nombre_encargado"
                 value={formValues.nombre_encargado}
                 onChange={handleChange}

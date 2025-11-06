@@ -7,11 +7,13 @@ import {
   Stack,
   Typography,
   CircularProgress,
+  Rating,
 } from "@mui/material";
 import {
   Delete as DeleteIcon,
   Edit as EditIcon,
   AddCircleOutline as AddCircleOutlineIcon,
+  Star as StarIcon,
 } from "@mui/icons-material";
 import Swal from "sweetalert2";
 import Search from "../../components/Search";
@@ -25,7 +27,7 @@ const Calificaciones = () => {
   const [deletingId, setDeletingId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
   const { user } = useAuth();
 
   // Consumir API de calificaciones
@@ -127,20 +129,10 @@ const Calificaciones = () => {
     return (
     <div className="right-content">
       <div className="card mt-2">
-        {/* Mostrar buscador y agregar solo para admin */}
+        {/* Mostrar buscador solo para admin */}
         {user?.role === "administrador" && (
           <div className="table-header d-flex justify-content-end align-items-center mt-2 mb-3 p-2">
             <Search onSearch={handleSearch} />
-            <Link to="/agregar_calificacion">
-              <Button
-                variant="contained"
-                className="mx-2"
-                color="success"
-                endIcon={<AddCircleOutlineIcon />}
-              >
-                Agregar
-              </Button>
-            </Link>
           </div>
         )}
 
@@ -155,57 +147,38 @@ const Calificaciones = () => {
               <table className="styled-table text-center">
                 <thead>
                   <tr className="text-center">
-                    <th>ID</th>
-                    <th>Ingeniero</th>
+                    <th>Id</th>
+                    <th>Nombre</th>
                     <th>Puntuación</th>
                     <th>Comentario</th>
                     <th>Fecha creación</th>
-                    {user?.role === "administrador" && <th>Acciones</th>}
                   </tr>
                 </thead>
                 <tbody>
                   {displayedItems.length ? (
                     displayedItems.map((item) => (
                       <tr key={item.id}>
-                        <td>{item.id}</td>
                         <td>{item.ing_id}</td>
-                        <td>{item.puntuacion}</td>
+                        <td>{item.nombre_ingeniero || "—"}</td>
+                        <td>
+                          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            <Rating
+                              value={parseFloat(item.puntuacion) || 0}
+                              max={5}
+                              readOnly
+                              size="small"
+                              icon={<StarIcon style={{ color: '#ffc107' }} />}
+                              emptyIcon={<StarIcon style={{ color: '#d3d3d3' }} />}
+                            />
+                          </div>
+                        </td>
                         <td>{item.comentario || "—"}</td>
                         <td>{new Date(item.fecha_creacion).toLocaleDateString("es-MX")}</td>
-                        {user?.role === "administrador" && (
-                          <td>
-                            <Stack direction="row" spacing={1} justifyContent={"center"}>
-                              <Link to={`/editar_calificacion/${item.id}`}>
-                                <Tooltip title="Editar">
-                                  <IconButton size="small" color="primary">
-                                    <EditIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-                              </Link>
-                              <Tooltip title="Eliminar">
-                                <span>
-                                  <IconButton
-                                    size="small"
-                                    color="error"
-                                    onClick={() => handleDelete(item.id)}
-                                    disabled={deletingId === item.id}
-                                  >
-                                    {deletingId === item.id ? (
-                                      <CircularProgress size={18} />
-                                    ) : (
-                                      <DeleteIcon fontSize="small" />
-                                    )}
-                                  </IconButton>
-                                </span>
-                              </Tooltip>
-                            </Stack>
-                          </td>
-                        )}
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={user?.role === "administrador" ? 6 : 5}>
+                      <td colSpan={5}>
                         No se encontraron resultados.
                       </td>
                     </tr>

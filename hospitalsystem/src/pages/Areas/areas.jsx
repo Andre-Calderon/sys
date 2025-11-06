@@ -23,7 +23,7 @@ const Areas = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
   // Consumir API de áreas
   useEffect(() => {
@@ -49,7 +49,7 @@ const Areas = () => {
         }
       );
 
-      if (!response.ok) throw new Error("Error al obtener áreas");
+      if (!response.ok) throw new Error("Error al obtener áreas específicas");
 
       const result = await response.json();
       if (!result.has_error) {
@@ -98,12 +98,12 @@ const Areas = () => {
 
           if (!response.ok) throw new Error("Error al eliminar área");
 
-          Swal.fire("Eliminado", "El área ha sido eliminada.", "success");
+          Swal.fire("Eliminado", "El área específica ha sido eliminada.", "success");
 
           setAreas((prev) => prev.filter((area) => area.id !== id));
         } catch (error) {
           console.error("Error eliminando área:", error);
-          Swal.fire("Error", "No se pudo eliminar el área", "error");
+          Swal.fire("Error", "No se pudo eliminar el área específica", "error");
         }
       }
     });
@@ -146,14 +146,14 @@ const Areas = () => {
             {loading ? (
               <div style={{ padding: 30, textAlign: "center" }}>
                 <CircularProgress />
-                <Typography mt={1}>Cargando áreas...</Typography>
+                <Typography mt={1}>Cargando áreas específicas...</Typography>
               </div>
             ) : (
               <table className="styled-table text-center">
                 <thead>
                   <tr className="text-center">
                     <th>ID</th>
-                    <th>Nombre del Área</th>
+                    <th>Nombre del Área Específica</th>
                     <th>Encargado</th>
                     <th>Fecha de Alta</th>
                     <th>Acciones</th>

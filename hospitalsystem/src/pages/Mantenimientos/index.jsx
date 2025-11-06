@@ -27,7 +27,7 @@ const Mantenimientos = () => {
   const [deletingId, setDeletingId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
   const handleSearch = (text) => setSearchTerm(text);
   const handlePageChange = (event, value) => setCurrentPage(value);
@@ -100,6 +100,7 @@ const Mantenimientos = () => {
     const term = searchTerm.toLowerCase();
 
     const idMatch = item.id.toString().includes(term);
+    const ticketMatch = item.ticket?.toString().toLowerCase().includes(term);
     const descripcionMatch = item.descripcion?.toLowerCase().includes(term);
     const estadoMatch = item.estado?.toLowerCase().includes(term);
     const tipoMatch = item.tipo_servicio?.toLowerCase().includes(term);
@@ -123,6 +124,7 @@ const Mantenimientos = () => {
     
     return (
       idMatch ||
+      ticketMatch ||
       descripcionMatch ||
       estadoMatch ||
       tipoMatch ||
@@ -201,7 +203,7 @@ const Mantenimientos = () => {
                         color="inherit"
                         size="small"
                         onClick={() => {
-                          console.log("Generar ticket para:", item.id);
+                          console.log("Generar ticket para:", item.ticket || item.id);
                         }}
                       >
                         Generar Ticket
@@ -210,8 +212,8 @@ const Mantenimientos = () => {
                     }
                   >
                     {type === "warning"
-                      ? `Por favor suba su solución y atienda el equipo (ID ${item.id})`
-                      : `¡Atención! El mantenimiento con ID ${item.id} ya venció sin solución.`}
+                      ? `Por favor suba su solución y atienda el equipo (Ticket ${item.ticket || item.id})`
+                      : `¡Atención! El mantenimiento con Ticket ${item.ticket || item.id} ya venció sin solución.`}
                   </Alert>
                 ))}
               </Stack>
@@ -229,7 +231,7 @@ const Mantenimientos = () => {
               <table className="styled-table text-center">
                 <thead>
                   <tr className="text-center">
-                    <th>ID</th>
+                    <th>Ticket</th>
                     <th>Descripción</th>
                     <th>Estado</th>
                     <th>Tipo de Servicio</th>
@@ -245,7 +247,7 @@ const Mantenimientos = () => {
                  {displayedItems.length ? (
                     displayedItems.map((item) => (
                       <tr key={item.id}>
-                        <td>{item.id}</td>
+                        <td>{item.ticket || item.id}</td>
                         <td>{item.descripcion}</td>
                         <td>{item.estado}</td>
                         <td>{item.tipo_servicio}</td>

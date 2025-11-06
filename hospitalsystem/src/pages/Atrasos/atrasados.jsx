@@ -26,7 +26,7 @@ const Atrasados = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
   const { user } = useAuth();
 
   useEffect(() => {

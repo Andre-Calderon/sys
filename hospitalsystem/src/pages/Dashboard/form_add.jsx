@@ -168,7 +168,7 @@ const Add_Dashboard = () => {
           <div className="row mb-3">
             <div className="col-md-6">
               <FormControl fullWidth>
-                <InputLabel>Área</InputLabel>
+                <InputLabel>Área Específica</InputLabel>
                 <Select
                   name="area_id"
                   value={formData.area_id}
