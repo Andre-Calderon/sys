@@ -17,6 +17,7 @@ import {
   AddCircleOutline as AddCircleOutlineIcon,
   Clear as ClearIcon,
   DateRange as DateRangeIcon,
+  Visibility as VisibilityIcon,
 } from "@mui/icons-material";
 import Search from "../../components/Search";
 import Paginacion from "../../components/Pagination";
@@ -24,6 +25,7 @@ import { useAuth } from "../../context/AuthContext";
 import Swal from "sweetalert2";
 import NoteAltIcon from '@mui/icons-material/NoteAlt';
 import { API_URL } from "../../config/api";
+import SeguimientoModal from "../../components/SeguimientoModal";
 
 const Mantenimientos = () => {
   const [mantenimientos, setMantenimientos] = useState([]);
@@ -33,6 +35,8 @@ const Mantenimientos = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFin, setFechaFin] = useState("");
+  const [seguimientoModalOpen, setSeguimientoModalOpen] = useState(false);
+  const [selectedMantenimiento, setSelectedMantenimiento] = useState(null);
   const itemsPerPage = 10;
 
   const handleSearch = (text) => setSearchTerm(text);
@@ -42,6 +46,16 @@ const Mantenimientos = () => {
     setFechaInicio("");
     setFechaFin("");
     setCurrentPage(1);
+  };
+
+  const handleOpenSeguimiento = (mantenimiento) => {
+    setSelectedMantenimiento(mantenimiento);
+    setSeguimientoModalOpen(true);
+  };
+
+  const handleCloseSeguimiento = () => {
+    setSeguimientoModalOpen(false);
+    setSelectedMantenimiento(null);
   };
 
   // Resetear página cuando cambian los filtros de fecha
@@ -362,6 +376,16 @@ const Mantenimientos = () => {
                         <td>{ item.solucion }</td>
                         <td>
                           <Stack direction="row" spacing={1} justifyContent="center">
+                            <Tooltip title="Ver Seguimiento">
+                              <IconButton
+                                size="small"
+                                color="info"
+                                onClick={() => handleOpenSeguimiento(item)}
+                              >
+                                <VisibilityIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+
                             {/* Editar y eliminar solo para administrador */}
                             {user?.role === "administrador" && (
                               <>
@@ -424,6 +448,15 @@ const Mantenimientos = () => {
           handlePageChange={handlePageChange}
         />
       </div>
+
+      {selectedMantenimiento && (
+        <SeguimientoModal
+          open={seguimientoModalOpen}
+          onClose={handleCloseSeguimiento}
+          mantenimientoId={selectedMantenimiento.id}
+          ticket={selectedMantenimiento.ticket}
+        />
+      )}
     </div>
   );
 };

@@ -19,7 +19,7 @@ const menuItems_OPCION_A = [
     text: "Dashboard",
     icon: <Dashboard style={{color:"var(--color-primary)"}} />, 
     path: "/Inicio",
-    roles:["administrador","ingeniero"],
+    roles:["administrador"],
     module: "inicio"
   },
   // MÓDULO 1: Operaciones Activas
@@ -28,7 +28,7 @@ const menuItems_OPCION_A = [
     text: "Seguimientos",
     icon: <Checklist style={{color:"var(--color-primary)"}} />, 
     path: "/seguimientos",
-    roles:["administrador","ingeniero"],
+    roles:["administrador"],
     module: "operaciones"
   },
   {
@@ -68,6 +68,7 @@ const menuItems_OPCION_A = [
       { text: "Departamentos", icon: <Apartment style={{color:"var(--color-secondary)"}} />,  path:"/departamentos", roles:["administrador"] },
       { text: "Áreas Específicas", icon: <AssuredWorkload style={{color:"var(--color-secondary)"}} />,  path:"/areas", roles:["administrador"] },
     ],
+    roles:["administrador"],
     module: "gestion"
   },
   {
@@ -77,6 +78,7 @@ const menuItems_OPCION_A = [
       { text: "Ingenieros", icon: <Engineering style={{color:"var(--color-secondary)"}} />,  path:"/registro_ingenieros", roles:["administrador"] },
       { text: "Administradores", icon: <VerifiedUser style={{color:"var(--color-secondary)"}} />,  path:"/registro_administradores", roles:["administrador"] },
     ],
+    roles:["administrador"],
     module: "gestion"
   },
   // MÓDULO 3: Evaluación
@@ -307,6 +309,24 @@ const Sidebar = () => {
   };
 
   const filteredItems = menuItems.filter(item => !item.roles || item.roles.includes(role));
+  
+  // Función para verificar si un divider debe mostrarse
+  const shouldShowDivider = (dividerIndex) => {
+    // Buscar el siguiente item después del divider
+    for (let i = dividerIndex + 1; i < menuItems.length; i++) {
+      const nextItem = menuItems[i];
+      // Si encontramos otro divider, no hay items en esta sección
+      if (nextItem.type === "divider" || nextItem.type === "section") {
+        return false;
+      }
+      // Si encontramos un item que el usuario puede ver, mostrar el divider
+      if (!nextItem.roles || nextItem.roles.includes(role)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   let itemIndex = 0;
 
   return (
@@ -318,6 +338,11 @@ const Sidebar = () => {
         {filteredItems.map((item, index) => {
           // Manejar separadores y títulos de sección
           if (item.type === "divider" || item.type === "section") {
+            // Verificar si hay items visibles después de este divider
+            const originalIndex = menuItems.findIndex(originalItem => originalItem === item);
+            if (!shouldShowDivider(originalIndex)) {
+              return null; // No mostrar el divider si no hay items visibles
+            }
             return (
               <React.Fragment key={`divider-${index}`}>
                 <Divider sx={{ my: 1, mx: 2 }} />

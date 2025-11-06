@@ -175,6 +175,9 @@ const Mi_Perfil = () => {
     }));
   };
 
+  // Determinar si el usuario es ingeniero
+  const isIngeniero = userType === "ingeniero" || user?.role === "ingeniero";
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -231,6 +234,23 @@ const Mi_Perfil = () => {
           setSubmitting(false);
           return;
         }
+      }
+
+      // Si es ingeniero, solo permitir cambio de contraseña
+      if (isIngeniero) {
+        // Solo procesar cambio de contraseña si hay valores
+        if (!formValues.nueva_password && !formValues.confirmar_password) {
+          setErrorMsg("No se pueden realizar cambios en el perfil. Solo se permite cambiar la contraseña.");
+          setSubmitting(false);
+          return;
+        }
+        // Si hay contraseña nueva, ya se procesó arriba, solo mostrar éxito
+        setSuccessMsg("Contraseña actualizada correctamente");
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+        setSubmitting(false);
+        return;
       }
 
       // Solo enviar campos modificados (sin incluir las contraseñas)
@@ -314,6 +334,9 @@ const Mi_Perfil = () => {
     );
   }
 
+  // Determinar si el usuario es ingeniero (para el render)
+  const isIngenieroRender = userType === "ingeniero" || user?.role === "ingeniero";
+
   return (
     <div className="right-content">
       <Card sx={{ borderRadius: 4, boxShadow: 5, overflow: "hidden" }}>
@@ -364,9 +387,17 @@ const Mi_Perfil = () => {
                   label="Nombres"
                   variant="outlined"
                   fullWidth
+                  InputProps={{
+                    readOnly: isIngenieroRender
+                  }}
                   sx={{
                     "& .MuiOutlinedInput-root": {
-                      height: "56px"
+                      height: "56px",
+                      ...(isIngenieroRender && {
+                        "&.Mui-disabled": {
+                          backgroundColor: "rgba(0, 0, 0, 0.04)"
+                        }
+                      })
                     }
                   }}
                 />
@@ -381,9 +412,17 @@ const Mi_Perfil = () => {
                   label="Apellido Paterno"
                   variant="outlined"
                   fullWidth
+                  InputProps={{
+                    readOnly: isIngenieroRender
+                  }}
                   sx={{
                     "& .MuiOutlinedInput-root": {
-                      height: "56px"
+                      height: "56px",
+                      ...(isIngenieroRender && {
+                        "&.Mui-disabled": {
+                          backgroundColor: "rgba(0, 0, 0, 0.04)"
+                        }
+                      })
                     }
                   }}
                 />
@@ -399,9 +438,17 @@ const Mi_Perfil = () => {
                   label="Apellido Materno"
                   variant="outlined"
                   fullWidth
+                  InputProps={{
+                    readOnly: isIngenieroRender
+                  }}
                   sx={{
                     "& .MuiOutlinedInput-root": {
-                      height: "56px"
+                      height: "56px",
+                      ...(isIngenieroRender && {
+                        "&.Mui-disabled": {
+                          backgroundColor: "rgba(0, 0, 0, 0.04)"
+                        }
+                      })
                     }
                   }}
                 />
@@ -416,9 +463,17 @@ const Mi_Perfil = () => {
                   label="Número de teléfono"
                   variant="outlined"
                   fullWidth
+                  InputProps={{
+                    readOnly: isIngenieroRender
+                  }}
                   sx={{
                     "& .MuiOutlinedInput-root": {
-                      height: "56px"
+                      height: "56px",
+                      ...(isIngenieroRender && {
+                        "&.Mui-disabled": {
+                          backgroundColor: "rgba(0, 0, 0, 0.04)"
+                        }
+                      })
                     }
                   }}
                 />
@@ -434,9 +489,17 @@ const Mi_Perfil = () => {
                   label="Correo electrónico"
                   variant="outlined"
                   fullWidth
+                  InputProps={{
+                    readOnly: isIngenieroRender
+                  }}
                   sx={{
                     "& .MuiOutlinedInput-root": {
-                      height: "56px"
+                      height: "56px",
+                      ...(isIngenieroRender && {
+                        "&.Mui-disabled": {
+                          backgroundColor: "rgba(0, 0, 0, 0.04)"
+                        }
+                      })
                     }
                   }}
                 />
@@ -472,6 +535,7 @@ const Mi_Perfil = () => {
                     value={formValues.genero}
                     onChange={handleChange}
                     label="Género"
+                    disabled={isIngenieroRender}
                   >
                     <MenuItem value={true}>Masculino</MenuItem>
                     <MenuItem value={false}>Femenino</MenuItem>

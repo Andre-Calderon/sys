@@ -6,7 +6,6 @@ import {
   InputAdornment,
   Box,
   Typography,
-  Link,
   Alert
 } from "@mui/material";
 import { Visibility, VisibilityOff, Lock, AccountCircle } from "@mui/icons-material";
@@ -147,20 +146,6 @@ const Login = () => {
               input: { color: "var(--color-text-primary)" }
             }}
           />
-
-          {/* Reset Password */}
-          <Box display="flex" justifyContent="flex-start" mt={1} mb={2}>
-            <Link
-              href="/reset-password"
-              sx={{
-                color: "var(--color-primary)",
-                textDecoration: "none",
-                "&:hover": { color: "var(--color-secondary)" }
-              }}
-            >
-              ¿Olvidaste tu contraseña?
-            </Link>
-          </Box>
 
           {/* Submit */}
           <Button

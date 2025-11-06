@@ -7,6 +7,10 @@ import {
   Divider,
   Alert,
   CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { API_URL } from "../../config/api";
@@ -17,16 +21,89 @@ const Add_Atraso = () => {
   const [formValues, setFormValues] = useState({
     disp_med_id: "",
     ticket: "",
-    mantenimiento_id: "",
     ing_id: "",
     fecha_fin: "",
     estado: "pendiente",
     descripcion_problema: "",
   });
+  const [mantenimientos, setMantenimientos] = useState([]);
+  const [dispositivos, setDispositivos] = useState([]);
+  const [ingenieros, setIngenieros] = useState([]);
+  const [loadingMantenimientos, setLoadingMantenimientos] = useState(true);
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [validationErrors, setValidationErrors] = useState({});
+  const [equipoNombre, setEquipoNombre] = useState("");
+  const [ingenieroNombre, setIngenieroNombre] = useState("");
+
+  // Obtener lista de mantenimientos, dispositivos e ingenieros
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setLoadingMantenimientos(false);
+      return;
+    }
+
+    const fetchMantenimientos = async () => {
+      try {
+        const res = await fetch(`${API_URL}/mantenimientos`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) throw new Error("Error al obtener mantenimientos");
+
+        const data = await res.json();
+        if (!data.has_error) {
+          setMantenimientos(data.data || []);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    const fetchDispositivos = async () => {
+      try {
+        const res = await fetch(`${API_URL}/dispositivos`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) throw new Error("Error al obtener dispositivos");
+
+        const data = await res.json();
+        if (!data.has_error) {
+          setDispositivos(data.data || []);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    const fetchIngenieros = async () => {
+      try {
+        const res = await fetch(`${API_URL}/ingenieros`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) throw new Error("Error al obtener ingenieros");
+
+        const data = await res.json();
+        if (!data.has_error) {
+          setIngenieros(data.data || []);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    const fetchAll = async () => {
+      setLoadingMantenimientos(true);
+      await Promise.all([fetchMantenimientos(), fetchDispositivos(), fetchIngenieros()]);
+      setLoadingMantenimientos(false);
+    };
+
+    fetchAll();
+  }, []);
 
   // Si viene desde mantenimientos, prellenar datos
   useEffect(() => {
@@ -35,16 +112,86 @@ const Add_Atraso = () => {
       setFormValues((prev) => ({
         ...prev,
         ticket: mantenimiento.ticket || "",
-        mantenimiento_id: mantenimiento.id || "",
         disp_med_id: mantenimiento.disp_med_id || "",
-        ing_id: mantenimiento.ingeniero?.id || "",
+        ing_id: mantenimiento.ingeniero?.id || mantenimiento.ing_id || "",
       }));
+      
+      // Establecer nombres
+      if (mantenimiento.dispositivo) {
+        setEquipoNombre(mantenimiento.dispositivo.equipo || "");
+      } else if (mantenimiento.disp_med_id && dispositivos.length > 0) {
+        const dispositivo = dispositivos.find((d) => d.id === mantenimiento.disp_med_id);
+        if (dispositivo) {
+          setEquipoNombre(dispositivo.equipo || "");
+        }
+      }
+      
+      if (mantenimiento.ingeniero) {
+        setIngenieroNombre(
+          `${mantenimiento.ingeniero.nombres || ""} ${mantenimiento.ingeniero.apellido_paterno || ""} ${mantenimiento.ingeniero.apellido_materno || ""}`.trim()
+        );
+      } else if (mantenimiento.ingeniero?.id && ingenieros.length > 0) {
+        const ingeniero = ingenieros.find((i) => i.id === mantenimiento.ingeniero.id);
+        if (ingeniero) {
+          setIngenieroNombre(
+            `${ingeniero.nombres || ""} ${ingeniero.apellido_paterno || ""} ${ingeniero.apellido_materno || ""}`.trim()
+          );
+        }
+      }
     }
-  }, [location.state]);
+  }, [location.state, dispositivos, ingenieros]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormValues((prev) => ({ ...prev, [name]: value }));
+    
+    // Si se selecciona un ticket, buscar el mantenimiento y prellenar campos
+    if (name === "ticket" && value) {
+      const mantenimiento = mantenimientos.find((m) => m.ticket === value || m.ticket?.toString() === value);
+      if (mantenimiento) {
+        setFormValues((prev) => ({
+          ...prev,
+          ticket: value,
+          disp_med_id: mantenimiento.disp_med_id || "",
+          ing_id: mantenimiento.ingeniero?.id || mantenimiento.ing_id || "",
+        }));
+        
+        // Establecer nombres para mostrar
+        if (mantenimiento.dispositivo) {
+          setEquipoNombre(mantenimiento.dispositivo.equipo || "");
+        } else if (mantenimiento.disp_med_id && dispositivos.length > 0) {
+          const dispositivo = dispositivos.find((d) => d.id === mantenimiento.disp_med_id);
+          setEquipoNombre(dispositivo?.equipo || `ID: ${mantenimiento.disp_med_id}`);
+        } else {
+          setEquipoNombre(mantenimiento.disp_med_id ? `ID: ${mantenimiento.disp_med_id}` : "");
+        }
+        
+        if (mantenimiento.ingeniero) {
+          const nombreCompleto = `${mantenimiento.ingeniero.nombres || ""} ${mantenimiento.ingeniero.apellido_paterno || ""} ${mantenimiento.ingeniero.apellido_materno || ""}`.trim();
+          setIngenieroNombre(nombreCompleto || `ID: ${mantenimiento.ingeniero.id}`);
+        } else if (mantenimiento.ing_id && ingenieros.length > 0) {
+          const ingeniero = ingenieros.find((i) => i.id === mantenimiento.ing_id || i.id === mantenimiento.ingeniero?.id);
+          if (ingeniero) {
+            const nombreCompleto = `${ingeniero.nombres || ""} ${ingeniero.apellido_paterno || ""} ${ingeniero.apellido_materno || ""}`.trim();
+            setIngenieroNombre(nombreCompleto || `ID: ${ingeniero.id}`);
+          } else {
+            setIngenieroNombre(mantenimiento.ing_id ? `ID: ${mantenimiento.ing_id}` : "");
+          }
+        } else {
+          setIngenieroNombre("");
+        }
+      } else {
+        setFormValues((prev) => ({ ...prev, [name]: value }));
+        setEquipoNombre("");
+        setIngenieroNombre("");
+      }
+    } else if (name === "ticket" && !value) {
+      // Si se limpia el folio, limpiar también los nombres
+      setFormValues((prev) => ({ ...prev, [name]: value, disp_med_id: "", ing_id: "" }));
+      setEquipoNombre("");
+      setIngenieroNombre("");
+    } else {
+      setFormValues((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -72,11 +219,9 @@ const Add_Atraso = () => {
         descripcion_problema: formValues.descripcion_problema,
       };
 
-      // Agregar ticket o mantenimiento_id (prioridad a ticket si ambos están)
+      // Agregar ticket
       if (formValues.ticket) {
         body.ticket = formValues.ticket;
-      } else if (formValues.mantenimiento_id) {
-        body.mantenimiento_id = formValues.mantenimiento_id;
       }
 
       const response = await fetch(`${API_URL}/tickets`, {
@@ -96,12 +241,13 @@ const Add_Atraso = () => {
         setFormValues({
           disp_med_id: "",
           ticket: "",
-          mantenimiento_id: "",
           ing_id: "",
           fecha_fin: "",
           estado: "pendiente",
           descripcion_problema: "",
         });
+        setEquipoNombre("");
+        setIngenieroNombre("");
         setValidationErrors({});
 
         setTimeout(() => navigate("/mantenimientos_atrasados"), 1500);
@@ -143,63 +289,61 @@ const Add_Atraso = () => {
 
           <div className="row g-3">
             <div className="col-12 col-md-6">
-              <TextField
-                required
-                type="text"
-                label="Folio del Mantenimiento (Ticket)"
-                name="ticket"
-                value={formValues.ticket}
-                onChange={handleChange}
-                helperText={validationErrors.ticket?.[0] || "Ingrese el folio del mantenimiento"}
-                error={!!validationErrors.ticket}
-                fullWidth
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    "& fieldset": { borderColor: "var(--color-primary)" },
-                    "&:hover fieldset": { borderColor: "var(--color-primary)" },
-                    "&.Mui-focused fieldset": { borderColor: "var(--color-secondary)" },
-                  },
-                  "& .MuiInputLabel-root.Mui-focused": { color: "var(--color-secondary)" },
-                }}
-              />
-            </div>
-
-            <div className="col-12 col-md-6">
-              <TextField
-                type="number"
-                label="ID del Mantenimiento (Opcional)"
-                name="mantenimiento_id"
-                value={formValues.mantenimiento_id}
-                onChange={handleChange}
-                helperText="Solo si no tiene el folio"
-                fullWidth
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    "& fieldset": { borderColor: "var(--color-primary)" },
-                    "&:hover fieldset": { borderColor: "var(--color-primary)" },
-                    "&.Mui-focused fieldset": { borderColor: "var(--color-secondary)" },
-                  },
-                  "& .MuiInputLabel-root.Mui-focused": { color: "var(--color-secondary)" },
-                }}
-              />
+              <FormControl fullWidth required error={!!validationErrors.ticket}>
+                <InputLabel id="ticket-label">Folio del Mantenimiento (Ticket)</InputLabel>
+                <Select
+                  labelId="ticket-label"
+                  label="Folio del Mantenimiento (Ticket)"
+                  name="ticket"
+                  value={formValues.ticket}
+                  onChange={handleChange}
+                  disabled={loadingMantenimientos}
+                  sx={{
+                    "&.MuiOutlinedInput-root": {
+                      "& fieldset": { borderColor: "var(--color-primary)" },
+                      "&:hover fieldset": { borderColor: "var(--color-primary)" },
+                      "&.Mui-focused fieldset": { borderColor: "var(--color-secondary)" },
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": { color: "var(--color-secondary)" },
+                  }}
+                >
+                  <MenuItem value="">
+                    <em>Seleccione un folio</em>
+                  </MenuItem>
+                  {mantenimientos.map((mant) => (
+                    <MenuItem key={mant.id} value={mant.ticket || mant.id}>
+                      {mant.ticket || mant.id}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {(validationErrors.ticket?.[0] || (loadingMantenimientos && "Cargando folios...")) && (
+                  <Typography variant="caption" color={validationErrors.ticket ? "error" : "text.secondary"} sx={{ mt: 0.5, ml: 1.75 }}>
+                    {validationErrors.ticket?.[0] || "Cargando folios..."}
+                  </Typography>
+                )}
+              </FormControl>
             </div>
 
             <div className="col-12 col-md-6">
               <TextField
                 required
-                type="number"
-                label="ID del equipo"
-                name="disp_med_id"
-                value={formValues.disp_med_id}
-                onChange={handleChange}
-                helperText={validationErrors.disp_med_id?.[0]}
+                label="Equipo"
+                name="equipo_display"
+                value={equipoNombre || ""}
+                helperText={validationErrors.disp_med_id?.[0] || "Se completa automáticamente al seleccionar el folio"}
                 error={!!validationErrors.disp_med_id}
                 fullWidth
+                InputProps={{
+                  readOnly: true,
+                }}
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     "& fieldset": { borderColor: "var(--color-primary)" },
                     "&:hover fieldset": { borderColor: "var(--color-primary)" },
                     "&.Mui-focused fieldset": { borderColor: "var(--color-secondary)" },
+                    "&.Mui-disabled": {
+                      backgroundColor: "rgba(0, 0, 0, 0.04)",
+                    },
                   },
                   "& .MuiInputLabel-root.Mui-focused": { color: "var(--color-secondary)" },
                 }}
@@ -209,19 +353,23 @@ const Add_Atraso = () => {
             <div className="col-12 col-md-6">
               <TextField
                 required
-                type="number"
-                label="ID del ingeniero"
-                name="ing_id"
-                value={formValues.ing_id}
-                onChange={handleChange}
-                helperText={validationErrors.ing_id?.[0]}
+                label="Ingeniero"
+                name="ingeniero_display"
+                value={ingenieroNombre || ""}
+                helperText={validationErrors.ing_id?.[0] || "Se completa automáticamente al seleccionar el folio"}
                 error={!!validationErrors.ing_id}
                 fullWidth
+                InputProps={{
+                  readOnly: true,
+                }}
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     "& fieldset": { borderColor: "var(--color-primary)" },
                     "&:hover fieldset": { borderColor: "var(--color-primary)" },
                     "&.Mui-focused fieldset": { borderColor: "var(--color-secondary)" },
+                    "&.Mui-disabled": {
+                      backgroundColor: "rgba(0, 0, 0, 0.04)",
+                    },
                   },
                   "& .MuiInputLabel-root.Mui-focused": { color: "var(--color-secondary)" },
                 }}
