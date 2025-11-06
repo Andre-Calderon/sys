@@ -17,6 +17,7 @@ import Swal from "sweetalert2";
 import Search from "../../components/Search";
 import Paginacion from "../../components/Pagination";
 import { useAuth } from "../../context/AuthContext";
+import { API_URL } from "../../config/api";
 
 const Calificaciones = () => {
   const [calificaciones, setCalificaciones] = useState([]);
@@ -39,7 +40,7 @@ const Calificaciones = () => {
       if (!token) return setLoading(false);
 
       const response = await fetch(
-        "https://biomedcontrol-api.onrender.com/api/calificaciones",
+        `${API_URL}/calificaciones`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -78,7 +79,7 @@ const Calificaciones = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `https://biomedcontrol-api.onrender.com/api/calificaciones/${id}`,
+        `${API_URL}/calificaciones/${id}`,
         {
           method: "DELETE",
           headers: {

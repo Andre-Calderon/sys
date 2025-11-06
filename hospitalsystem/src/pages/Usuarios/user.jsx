@@ -16,6 +16,7 @@ import {
 import Swal from "sweetalert2";
 import Search from "../../components/Search";
 import Paginacion from "../../components/Pagination";
+import { API_URL } from "../../config/api";
 
 const Ingenieros = () => {
   const [ingenieros, setIngenieros] = useState([]);
@@ -36,7 +37,7 @@ const Ingenieros = () => {
       if (!token) throw new Error("Usuario no autenticado");
 
       const response = await fetch(
-        "https://biomedcontrol-api.onrender.com/api/ingenieros",
+        `${API_URL}/ingenieros`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -74,7 +75,7 @@ const Ingenieros = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `https://biomedcontrol-api.onrender.com/api/ingenieros/${id}`,
+        `${API_URL}/ingenieros/${id}`,
         {
           method: "DELETE",
           headers: {

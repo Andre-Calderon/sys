@@ -17,6 +17,7 @@ import {
 import Swal from "sweetalert2";
 import Search from "../../components/Search";
 import Paginacion from "../../components/Pagination";
+import { API_URL } from "../../config/api";
 import { useAuth } from "../../context/AuthContext";
 
 const Atrasados = () => {
@@ -36,7 +37,7 @@ const Atrasados = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("https://biomedcontrol-api.onrender.com/api/tickets", {
+      const res = await fetch(`${API_URL}/tickets`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -69,7 +70,7 @@ const Atrasados = () => {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`https://biomedcontrol-api.onrender.com/api/tickets/${id}`, {
+      const res = await fetch(`${API_URL}/tickets/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

@@ -14,6 +14,7 @@ import {
   CircularProgress
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
+import { API_URL } from "../../config/api";
 
 const Edit_Dashboard = () => {
   const { id } = useParams();
@@ -37,7 +38,7 @@ const Edit_Dashboard = () => {
     const fetchAreas = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("https://biomedcontrol-api.onrender.com/api/areas", {
+        const res = await fetch(`${API_URL}/areas`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -55,7 +56,7 @@ const Edit_Dashboard = () => {
     const fetchDevice = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`https://biomedcontrol-api.onrender.com/api/dispositivos/${id}`, {
+        const res = await fetch(`${API_URL}/dispositivos/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!res.ok) throw new Error("Error al obtener el dispositivo");
@@ -102,7 +103,7 @@ const Edit_Dashboard = () => {
         return;
       }
 
-      const res = await fetch(`https://biomedcontrol-api.onrender.com/api/dispositivos/${id}`, {
+      const res = await fetch(`${API_URL}/dispositivos/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

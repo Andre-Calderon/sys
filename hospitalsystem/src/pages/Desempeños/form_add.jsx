@@ -12,6 +12,7 @@ import {
   InputLabel,
   FormControl
 } from "@mui/material";
+import { API_URL } from "../../config/api";
 
 const Calificaciones_Agregar = () => {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ const Calificaciones_Agregar = () => {
     const fetchIngenieros = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("https://biomedcontrol-api.onrender.com/api/ingenieros", {
+        const res = await fetch(`${API_URL}/ingenieros`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!res.ok) throw new Error("Error al obtener ingenieros");
@@ -71,7 +72,7 @@ const Calificaciones_Agregar = () => {
         fecha_creacion: new Date().toISOString().split("T")[0] // YYYY-MM-DD
       };
 
-      const response = await fetch("https://biomedcontrol-api.onrender.com/api/calificaciones", {
+      const response = await fetch(`${API_URL}/calificaciones`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

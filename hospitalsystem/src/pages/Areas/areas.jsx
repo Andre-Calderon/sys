@@ -16,6 +16,7 @@ import {
 import Swal from "sweetalert2";
 import Search from "../../components/Search";
 import Paginacion from "../../components/Pagination";
+import { API_URL } from "../../config/api";
 
 const Areas = () => {
   const [areas, setAreas] = useState([]);
@@ -39,7 +40,7 @@ const Areas = () => {
       }
 
       const response = await fetch(
-        "https://biomedcontrol-api.onrender.com/api/areas",
+        `${API_URL}/areas`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -85,7 +86,7 @@ const Areas = () => {
         try {
           const token = localStorage.getItem("token");
           const response = await fetch(
-            `https://biomedcontrol-api.onrender.com/api/areas/${id}`,
+            `${API_URL}/areas/${id}`,
             {
               method: "DELETE",
               headers: {

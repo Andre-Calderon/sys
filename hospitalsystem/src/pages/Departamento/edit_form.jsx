@@ -9,6 +9,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
+import { API_URL } from "../../config/api";
 
 const Edit_Departamento = () => {
   const { id } = useParams();
@@ -31,7 +32,7 @@ const Edit_Departamento = () => {
         if (!token) throw new Error("Usuario no autenticado");
 
         const res = await fetch(
-          `https://biomedcontrol-api.onrender.com/api/departamentos/${id}`,
+          `${API_URL}/departamentos/${id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -84,7 +85,7 @@ const Edit_Departamento = () => {
       }
 
       const res = await fetch(
-        `https://biomedcontrol-api.onrender.com/api/departamentos/${id}`,
+        `${API_URL}/departamentos/${id}`,
         {
           method: "PUT",
           headers: {

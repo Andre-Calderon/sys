@@ -19,6 +19,7 @@ import Paginacion from "../../components/Pagination";
 import { useAuth } from "../../context/AuthContext";
 import Swal from "sweetalert2";
 import NoteAltIcon from '@mui/icons-material/NoteAlt';
+import { API_URL } from "../../config/api";
 
 const Mantenimientos = () => {
   const [mantenimientos, setMantenimientos] = useState([]);
@@ -41,7 +42,7 @@ const Mantenimientos = () => {
       const token = localStorage.getItem("token");
       if (!token) return;
 
-      const res = await fetch("https://biomedcontrol-api.onrender.com/api/mantenimientos", {
+      const res = await fetch(`${API_URL}/mantenimientos`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -78,7 +79,7 @@ const Mantenimientos = () => {
     setDeletingId(id);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`https://biomedcontrol-api.onrender.com/api/mantenimientos/${id}`, {
+      const res = await fetch(`${API_URL}/mantenimientos/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

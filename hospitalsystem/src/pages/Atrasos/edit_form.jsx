@@ -12,6 +12,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
+import { API_URL } from "../../config/api";
 
 const Edit_Atraso = () => {
   const { id } = useParams();
@@ -32,7 +33,7 @@ const Edit_Atraso = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await fetch(
-          `https://biomedcontrol-api.onrender.com/api/tickets/${id}`,
+          `${API_URL}/tickets/${id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -68,7 +69,7 @@ const Edit_Atraso = () => {
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        `https://biomedcontrol-api.onrender.com/api/tickets/${id}`,
+        `${API_URL}/tickets/${id}`,
         {
           method: "PUT",
           headers: {

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, TextField, Grid, Typography, Box, CircularProgress } from "@mui/material";
 import Swal from "sweetalert2";
+import { API_URL } from "../../config/api";
 
 const Add_Users = () => {
   const navigate = useNavigate();
@@ -35,7 +36,7 @@ const Add_Users = () => {
       }
 
       const response = await fetch(
-        "https://biomedcontrol-api.onrender.com/api/ingenieros",
+        `${API_URL}/ingenieros`,
         {
           method: "POST",
           headers: {

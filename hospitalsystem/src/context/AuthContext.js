@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from "react";
+import { API_URL } from "../config/api";
 
 const AuthContext = createContext();
 
@@ -20,7 +21,7 @@ export const AuthProvider = ({ children }) => {
 
     try {
       if (token) {
-        await fetch("https://biomedcontrol-api.onrender.com/api/logout/", {
+        await fetch(`${API_URL}/logout/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

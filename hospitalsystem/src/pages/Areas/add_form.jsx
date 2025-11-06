@@ -13,6 +13,7 @@ import {
   FormControl,
   CircularProgress
 } from "@mui/material";
+import { API_URL } from "../../config/api";
 
 const Add_Area = () => {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ const Add_Area = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await fetch(
-          "https://biomedcontrol-api.onrender.com/api/departamentos",
+          `${API_URL}/departamentos`,
           {
             headers: { Authorization: `Bearer ${token}` }
           }
@@ -69,7 +70,7 @@ const Add_Area = () => {
       }
 
       const response = await fetch(
-        "https://biomedcontrol-api.onrender.com/api/areas",
+        `${API_URL}/areas`,
         {
           method: "POST",
           headers: {

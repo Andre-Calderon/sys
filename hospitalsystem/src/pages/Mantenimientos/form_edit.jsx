@@ -12,6 +12,7 @@ import {
   Alert,
 } from "@mui/material";
 import { useAuth } from "../../context/AuthContext";
+import { API_URL } from "../../config/api";
 
 // Funciones de mapeo para estado
 const mapEstadoFromAPI = (estado) => {
@@ -87,7 +88,7 @@ const Edit_Mantenimiento = () => {
 
     const fetchIngenieros = async () => {
       try {
-        const res = await fetch("https://biomedcontrol-api.onrender.com/api/ingenieros", {
+        const res = await fetch(`${API_URL}/ingenieros`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("Error al obtener ingenieros");
@@ -101,7 +102,7 @@ const Edit_Mantenimiento = () => {
 
     const fetchDispositivos = async () => {
       try {
-        const res = await fetch("https://biomedcontrol-api.onrender.com/api/dispositivos", {
+        const res = await fetch(`${API_URL}/dispositivos`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("Error al obtener dispositivos");
@@ -115,7 +116,7 @@ const Edit_Mantenimiento = () => {
 
     const fetchMantenimiento = async () => {
       try {
-        const res = await fetch(`https://biomedcontrol-api.onrender.com/api/mantenimientos/${id}`, {
+        const res = await fetch(`${API_URL}/mantenimientos/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("Error al obtener mantenimiento");
@@ -177,7 +178,7 @@ const Edit_Mantenimiento = () => {
       console.log("📤 Payload a enviar:", JSON.stringify(payload, null, 2));
 
       const response = await fetch(
-        `https://biomedcontrol-api.onrender.com/api/mantenimientos/${id}`,
+        `${API_URL}/mantenimientos/${id}`,
         {
           method: "PUT",
           headers: {

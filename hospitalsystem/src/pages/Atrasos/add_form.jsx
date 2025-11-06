@@ -13,6 +13,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../../config/api";
 
 const Add_Atraso = () => {
   const navigate = useNavigate();
@@ -48,7 +49,7 @@ const Add_Atraso = () => {
       }
 
       const response = await fetch(
-        "https://biomedcontrol-api.onrender.com/api/tickets",
+        `${API_URL}/tickets`,
         {
           method: "POST",
           headers: {

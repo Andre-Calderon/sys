@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import { API_URL } from "../../config/api";
 
 const Agregar_Admin = () => {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ const Agregar_Admin = () => {
       if (!token) throw new Error("Usuario no autenticado");
 
       const response = await fetch(
-        "https://biomedcontrol-api.onrender.com/api/administradores",
+        `${API_URL}/administradores`,
         {
           method: "POST",
           headers: {

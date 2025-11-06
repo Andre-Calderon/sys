@@ -13,6 +13,7 @@ import {
   CircularProgress
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../../config/api";
 
 const Add_Dashboard = () => {
   const [areas, setAreas] = useState([]);
@@ -35,7 +36,7 @@ const Add_Dashboard = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await fetch(
-          "https://biomedcontrol-api.onrender.com/api/areas",
+          `${API_URL}/areas`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -77,7 +78,7 @@ const Add_Dashboard = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        "https://biomedcontrol-api.onrender.com/api/dispositivos",
+        `${API_URL}/dispositivos`,
         {
           method: "POST",
           headers: {

@@ -13,6 +13,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
+import { API_URL } from "../../config/api";
 
 const Editar_Admin = () => {
   const { id } = useParams();
@@ -40,7 +41,7 @@ const Editar_Admin = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await fetch(
-          `https://biomedcontrol-api.onrender.com/api/administradores/${id}`,
+          `${API_URL}/administradores/${id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -109,7 +110,7 @@ const Editar_Admin = () => {
       }
 
       const res = await fetch(
-        `https://biomedcontrol-api.onrender.com/api/administradores/${id}`,
+        `${API_URL}/administradores/${id}`,
         {
           method: "PUT",
           headers: {

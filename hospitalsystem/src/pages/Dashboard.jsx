@@ -17,6 +17,7 @@ import {
 import Swal from "sweetalert2";
 import Search from "../components/Search";
 import Paginacion from "../components/Pagination";
+import { API_URL } from "../config/api";
 
 const Dashboard = () => {
   const [dispositivos, setDispositivos] = useState([]);
@@ -41,7 +42,7 @@ const Dashboard = () => {
       }
 
       const response = await fetch(
-        "https://biomedcontrol-api.onrender.com/api/dispositivos",
+        `${API_URL}/dispositivos`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -79,7 +80,7 @@ const Dashboard = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `https://biomedcontrol-api.onrender.com/api/dispositivos/${id}`,
+        `${API_URL}/dispositivos/${id}`,
         {
           method: "DELETE",
           headers: {

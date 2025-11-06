@@ -13,6 +13,7 @@ import { Visibility, VisibilityOff, Lock, AccountCircle } from "@mui/icons-mater
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Logo from "../../assets/img/logo.png";
+import { API_URL } from "../../config/api";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -32,7 +33,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("https://biomedcontrol-api.onrender.com/api/login/", {
+      const response = await fetch(`${API_URL}/login/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

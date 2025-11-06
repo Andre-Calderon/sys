@@ -12,6 +12,7 @@ import {
   CircularProgress
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
+import { API_URL } from "../../config/api";
 
 const Edit_User = () => {
   const { id } = useParams();
@@ -36,7 +37,7 @@ const Edit_User = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await fetch(
-          `https://biomedcontrol-api.onrender.com/api/ingenieros/${id}`,
+          `${API_URL}/ingenieros/${id}`,
           {
             headers: { Authorization: `Bearer ${token}` }
           }
@@ -95,7 +96,7 @@ const Edit_User = () => {
       }
 
       const res = await fetch(
-        `https://biomedcontrol-api.onrender.com/api/ingenieros/${id}`,
+        `${API_URL}/ingenieros/${id}`,
         {
           method: "PUT",
           headers: {

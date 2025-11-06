@@ -12,6 +12,7 @@ import {
   FormControl
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
+import { API_URL } from "../../config/api";
 
 const Calificaciones_Editar = () => {
   const { id } = useParams(); // ID de la calificación
@@ -36,7 +37,7 @@ const Calificaciones_Editar = () => {
     const fetchIngenieros = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("https://biomedcontrol-api.onrender.com/api/ingenieros", {
+        const res = await fetch(`${API_URL}/ingenieros`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!res.ok) throw new Error("Error al obtener ingenieros");
@@ -56,7 +57,7 @@ const Calificaciones_Editar = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await fetch(
-          `https://biomedcontrol-api.onrender.com/api/calificaciones/${id}`,
+          `${API_URL}/calificaciones/${id}`,
           {
             headers: { Authorization: `Bearer ${token}` }
           }
@@ -113,7 +114,7 @@ const Calificaciones_Editar = () => {
       }
 
       const res = await fetch(
-        `https://biomedcontrol-api.onrender.com/api/calificaciones/${id}`,
+        `${API_URL}/calificaciones/${id}`,
         {
           method: "PUT",
           headers: {

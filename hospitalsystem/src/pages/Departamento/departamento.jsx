@@ -4,6 +4,7 @@ import { IconButton, Button, Tooltip, Stack, Typography, CircularProgress } from
 import { Delete as DeleteIcon, Edit as EditIcon, AddCircleOutline as AddCircleOutlineIcon } from "@mui/icons-material";
 import Search from "../../components/Search";
 import Paginacion from "../../components/Pagination";
+import { API_URL } from "../../config/api";
 import Swal from "sweetalert2";
 
 const Departamento = () => {
@@ -24,7 +25,7 @@ const Departamento = () => {
       const token = localStorage.getItem("token");
       if (!token) return;
 
-      const res = await fetch("https://biomedcontrol-api.onrender.com/api/departamentos", {
+      const res = await fetch(`${API_URL}/departamentos`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Error al obtener departamentos");
@@ -60,7 +61,7 @@ const Departamento = () => {
     setDeletingId(id);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`https://biomedcontrol-api.onrender.com/api/departamentos/${id}`, {
+      const res = await fetch(`${API_URL}/departamentos/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

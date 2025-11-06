@@ -9,6 +9,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../../config/api";
 
 const Add_Departamento = () => {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ const Add_Departamento = () => {
       if (!token) throw new Error("Usuario no autenticado");
 
       const res = await fetch(
-        "https://biomedcontrol-api.onrender.com/api/departamentos",
+        `${API_URL}/departamentos`,
         {
           method: "POST",
           headers: {

@@ -13,6 +13,7 @@ import {
   CircularProgress
 } from "@mui/material";
 import { useAuth } from "../../context/AuthContext";
+import { API_URL } from "../../config/api";
 
 const Add_Mantenimiento = () => {
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ const Add_Mantenimiento = () => {
     const fetchIngenieros = async () => {
       try {
         const res = await fetch(
-          "https://biomedcontrol-api.onrender.com/api/ingenieros",
+          `${API_URL}/ingenieros`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         if (!res.ok) throw new Error("Error al obtener ingenieros");
@@ -57,7 +58,7 @@ const Add_Mantenimiento = () => {
     const fetchDispositivos = async () => {
       try {
         const res = await fetch(
-          "https://biomedcontrol-api.onrender.com/api/dispositivos",
+          `${API_URL}/dispositivos`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         if (!res.ok) throw new Error("Error al obtener dispositivos");
@@ -109,7 +110,7 @@ const Add_Mantenimiento = () => {
       console.log("📤 Payload a enviar:", JSON.stringify(payload, null, 2));
 
       const response = await fetch(
-        "https://biomedcontrol-api.onrender.com/api/mantenimientos",
+        `${API_URL}/mantenimientos`,
         {
           method: "POST",
           headers: {

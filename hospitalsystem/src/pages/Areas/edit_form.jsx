@@ -8,6 +8,7 @@ import {
   CircularProgress
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
+import { API_URL } from "../../config/api";
 
 const Edit_Area = () => {
   const { id } = useParams(); // id del área
@@ -27,7 +28,7 @@ const Edit_Area = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await fetch(
-          `https://biomedcontrol-api.onrender.com/api/areas/${id}`,
+          `${API_URL}/areas/${id}`,
           {
             headers: { Authorization: `Bearer ${token}` }
           }
@@ -80,7 +81,7 @@ const Edit_Area = () => {
       }
 
       const res = await fetch(
-        `https://biomedcontrol-api.onrender.com/api/areas/${id}`,
+        `${API_URL}/areas/${id}`,
         {
           method: "PUT",
           headers: {

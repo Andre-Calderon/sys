@@ -17,6 +17,7 @@ import {
 import Swal from "sweetalert2";
 import Search from "../../components/Search";
 import Paginacion from "../../components/Pagination";
+import { API_URL } from "../../config/api";
 
 const Lista_administradores = () => {
   const [admins, setAdmins] = useState([]);
@@ -44,7 +45,7 @@ const Lista_administradores = () => {
       }
 
       const response = await fetch(
-        "https://biomedcontrol-api.onrender.com/api/administradores",
+        `${API_URL}/administradores`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -91,7 +92,7 @@ const Lista_administradores = () => {
           if (!token) throw new Error("Usuario no autenticado");
 
           const response = await fetch(
-            `https://biomedcontrol-api.onrender.com/api/administradores/${id}`,
+            `${API_URL}/administradores/${id}`,
             {
               method: "DELETE",
               headers: {
