@@ -8,11 +8,15 @@ import {
   Typography,
   Alert,
   CircularProgress,
+  TextField,
+  Box,
 } from "@mui/material";
 import {
   Delete as DeleteIcon,
   Edit as EditIcon,
   AddCircleOutline as AddCircleOutlineIcon,
+  Clear as ClearIcon,
+  DateRange as DateRangeIcon,
 } from "@mui/icons-material";
 import Swal from "sweetalert2";
 import Search from "../../components/Search";
@@ -25,6 +29,8 @@ const Atrasados = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [fechaInicio, setFechaInicio] = useState("");
+  const [fechaFin, setFechaFin] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const itemsPerPage = 10;
   const { user } = useAuth();
@@ -99,12 +105,56 @@ const Atrasados = () => {
   const handleSearch = (text) => setSearchTerm(text);
   const handlePageChange = (event, value) => setCurrentPage(value);
 
-  // FILTRADO Y PAGINACIÓN
-  const filteredData = tickets.filter((t) =>
+  const handleClearDates = () => {
+    setFechaInicio("");
+    setFechaFin("");
+    setCurrentPage(1);
+  };
+
+  // Resetear página cuando cambian los filtros de fecha
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [fechaInicio, fechaFin]);
+
+  // FILTRADO POR BÚSQUEDA
+  const searchFiltered = tickets.filter((t) =>
     Object.values(t).some((val) =>
       val?.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
+
+  // FILTRADO POR RANGO DE FECHAS
+  const dateFiltered = searchFiltered.filter((t) => {
+    if (!fechaInicio && !fechaFin) return true; // Sin filtro de fechas
+    
+    const fechaCreacion = t.fecha_creacion ? new Date(t.fecha_creacion) : null;
+    if (!fechaCreacion) return false;
+
+    // Ajustar fechas para comparación (solo fecha, sin hora)
+    const fechaInicioDate = fechaInicio ? new Date(fechaInicio) : null;
+    const fechaFinDate = fechaFin ? new Date(fechaFin) : null;
+
+    // Ajustar hora de fechaFin al final del día para incluir todo el día
+    if (fechaFinDate) {
+      fechaFinDate.setHours(23, 59, 59, 999);
+    }
+
+    fechaCreacion.setHours(0, 0, 0, 0);
+    if (fechaInicioDate) fechaInicioDate.setHours(0, 0, 0, 0);
+
+    if (fechaInicioDate && fechaFinDate) {
+      return fechaCreacion >= fechaInicioDate && fechaCreacion <= fechaFinDate;
+    } else if (fechaInicioDate) {
+      return fechaCreacion >= fechaInicioDate;
+    } else if (fechaFinDate) {
+      return fechaCreacion <= fechaFinDate;
+    }
+    
+    return true;
+  });
+
+  // FILTRADO Y PAGINACIÓN
+  const filteredData = dateFiltered;
 
 // FILTRADO SEGÚN ROL
 const roleFilteredTickets =
@@ -119,8 +169,54 @@ const roleFilteredTickets =
   return (
     <div className="right-content">
       <div className="card mt-2">
-        <div className="table-header d-flex justify-content-end align-items-center mt-2 mb-3 p-2">
-          <Search onSearch={handleSearch} />
+        <div className="table-header d-flex justify-content-between align-items-center mt-2 mb-3 p-2">
+          <Box sx={{ display: "flex", gap: 2, alignItems: "center", flexWrap: "wrap" }}>
+            <Search onSearch={handleSearch} />
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+              <DateRangeIcon sx={{ color: "var(--color-primary)" }} />
+              <TextField
+                type="date"
+                label="Fecha Inicio"
+                value={fechaInicio}
+                onChange={(e) => setFechaInicio(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                size="small"
+                sx={{
+                  width: 180,
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "var(--color-primary)" },
+                    "&:hover fieldset": { borderColor: "var(--color-primary)" },
+                    "&.Mui-focused fieldset": { borderColor: "var(--color-secondary)" },
+                  },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "var(--color-secondary)" },
+                }}
+              />
+              <TextField
+                type="date"
+                label="Fecha Fin"
+                value={fechaFin}
+                onChange={(e) => setFechaFin(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                size="small"
+                sx={{
+                  width: 180,
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "var(--color-primary)" },
+                    "&:hover fieldset": { borderColor: "var(--color-primary)" },
+                    "&.Mui-focused fieldset": { borderColor: "var(--color-secondary)" },
+                  },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "var(--color-secondary)" },
+                }}
+              />
+              {(fechaInicio || fechaFin) && (
+                <Tooltip title="Limpiar filtro de fechas">
+                  <IconButton onClick={handleClearDates} color="primary" size="small">
+                    <ClearIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Box>
+          </Box>
           <Link to="/agregar_atraso">
             <Button
               variant="contained"
@@ -195,7 +291,7 @@ const roleFilteredTickets =
         </div>
 
         <Paginacion
-          totalItems={filteredData.length}
+          totalItems={roleFilteredTickets.length}
           itemsPerPage={itemsPerPage}
           currentPage={currentPage}
           handlePageChange={handlePageChange}

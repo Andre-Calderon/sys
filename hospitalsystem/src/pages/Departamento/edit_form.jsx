@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   Button,
   TextField,
-  Grid,
   Typography,
   Box,
   Alert,
@@ -143,19 +142,17 @@ const Edit_Departamento = () => {
             "& .MuiInputLabel-root.Mui-focused": { color: "var(--color-secondary)" },
           }}
         >
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                type="text"
-                label="Nombre del departamento"
-                name="nombre"
-                value={formValues.nombre}
-                onChange={handleChange}
-                fullWidth
-              />
-            </Grid>
-          </Grid>
+          <Box display="flex" justifyContent="center">
+            <TextField
+              required
+              type="text"
+              label="Nombre del departamento"
+              name="nombre"
+              value={formValues.nombre}
+              onChange={handleChange}
+              sx={{ width: "50%" }}
+            />
+          </Box>
 
           <Box display="flex" justifyContent="center" mt={3}>
             <Button

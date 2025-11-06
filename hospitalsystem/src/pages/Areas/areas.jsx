@@ -152,7 +152,6 @@ const Areas = () => {
               <table className="styled-table text-center">
                 <thead>
                   <tr className="text-center">
-                    <th>ID</th>
                     <th>Nombre del Área Específica</th>
                     <th>Encargado</th>
                     <th>Fecha de Alta</th>
@@ -163,7 +162,6 @@ const Areas = () => {
                   {currentItems.length ? (
                     currentItems.map((item) => (
                       <tr key={item.id}>
-                        <td>{item.id}</td>
                         <td>{item.nombre}</td>
                         <td>{item.nombre_encargado}</td>
                         <td>
@@ -200,7 +198,7 @@ const Areas = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="5">No se encontraron resultados.</td>
+                      <td colSpan="4">No se encontraron resultados.</td>
                     </tr>
                   )}
                 </tbody>

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   Button,
   TextField,
-  Grid,
   Typography,
   Box,
   Alert,
@@ -94,19 +93,17 @@ const Add_Departamento = () => {
             "& .MuiInputLabel-root.Mui-focused": { color: "var(--color-secondary)" },
           }}
         >
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                type="text"
-                label="Nombre del departamento"
-                variant="outlined"
-                fullWidth
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-              />
-            </Grid>
-          </Grid>
+          <Box display="flex" justifyContent="center">
+            <TextField
+              required
+              type="text"
+              label="Nombre del departamento"
+              variant="outlined"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              sx={{ width: "50%" }}
+            />
+          </Box>
 
           <Box display="flex" justifyContent="center" mt={3}>
             <Button

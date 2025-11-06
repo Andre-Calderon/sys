@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   Button,
   TextField,
-  Grid,
   Typography,
   Box,
   CircularProgress
@@ -127,32 +126,28 @@ const Edit_Area = () => {
             "& .MuiInputLabel-root.Mui-focused": { color: "var(--color-secondary)" }
           }}
         >
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                name="nombre"
-                value={formValues.nombre}
-                onChange={handleChange}
-                required
-                type="text"
-                label="Nombre del área específica"
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                name="nombre_encargado"
-                value={formValues.nombre_encargado}
-                onChange={handleChange}
-                required
-                type="text"
-                label="Nombre del encargado del área específica"
-                variant="outlined"
-                fullWidth
-              />
-            </Grid>
-          </Grid>
+          <Box display="flex" flexDirection="column" alignItems="center" gap={3}>
+            <TextField
+              name="nombre"
+              value={formValues.nombre}
+              onChange={handleChange}
+              required
+              type="text"
+              label="Nombre del área específica"
+              variant="outlined"
+              sx={{ width: "50%" }}
+            />
+            <TextField
+              name="nombre_encargado"
+              value={formValues.nombre_encargado}
+              onChange={handleChange}
+              required
+              type="text"
+              label="Nombre del encargado del área específica"
+              variant="outlined"
+              sx={{ width: "50%" }}
+            />
+          </Box>
 
             <Box display="flex" justifyContent="center" mt={3}>
               <Button

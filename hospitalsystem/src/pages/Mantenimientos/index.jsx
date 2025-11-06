@@ -7,12 +7,16 @@ import {
   Stack,
   Typography,
   CircularProgress,
-  Alert
+  Alert,
+  TextField,
+  Box,
 } from "@mui/material";
 import {
   Delete as DeleteIcon,
   Edit as EditIcon,
-  AddCircleOutline as AddCircleOutlineIcon
+  AddCircleOutline as AddCircleOutlineIcon,
+  Clear as ClearIcon,
+  DateRange as DateRangeIcon,
 } from "@mui/icons-material";
 import Search from "../../components/Search";
 import Paginacion from "../../components/Pagination";
@@ -27,10 +31,23 @@ const Mantenimientos = () => {
   const [deletingId, setDeletingId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [fechaInicio, setFechaInicio] = useState("");
+  const [fechaFin, setFechaFin] = useState("");
   const itemsPerPage = 10;
 
   const handleSearch = (text) => setSearchTerm(text);
   const handlePageChange = (event, value) => setCurrentPage(value);
+
+  const handleClearDates = () => {
+    setFechaInicio("");
+    setFechaFin("");
+    setCurrentPage(1);
+  };
+
+  // Resetear página cuando cambian los filtros de fecha
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [fechaInicio, fechaFin]);
 
   const { user } = useAuth();
   
@@ -96,7 +113,7 @@ const Mantenimientos = () => {
   };
 
   // Filtrar por búsqueda
-  const filteredData = mantenimientos.filter((item) => {
+  const searchFiltered = mantenimientos.filter((item) => {
     const term = searchTerm.toLowerCase();
 
     const idMatch = item.id.toString().includes(term);
@@ -136,17 +153,50 @@ const Mantenimientos = () => {
     );
   });
 
-  // Paginación
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+  // FILTRADO POR RANGO DE FECHAS (filtra por fecha_inicio)
+  const dateFiltered = searchFiltered.filter((item) => {
+    if (!fechaInicio && !fechaFin) return true; // Sin filtro de fechas
+    
+    const fechaInicioItem = item.fecha_inicio ? new Date(item.fecha_inicio) : null;
+    if (!fechaInicioItem) return false;
+
+    // Ajustar fechas para comparación (solo fecha, sin hora)
+    const fechaInicioDate = fechaInicio ? new Date(fechaInicio) : null;
+    const fechaFinDate = fechaFin ? new Date(fechaFin) : null;
+
+    // Ajustar hora de fechaFin al final del día para incluir todo el día
+    if (fechaFinDate) {
+      fechaFinDate.setHours(23, 59, 59, 999);
+    }
+
+    fechaInicioItem.setHours(0, 0, 0, 0);
+    if (fechaInicioDate) fechaInicioDate.setHours(0, 0, 0, 0);
+
+    if (fechaInicioDate && fechaFinDate) {
+      return fechaInicioItem >= fechaInicioDate && fechaInicioItem <= fechaFinDate;
+    } else if (fechaInicioDate) {
+      return fechaInicioItem >= fechaInicioDate;
+    } else if (fechaFinDate) {
+      return fechaInicioItem <= fechaFinDate;
+    }
+    
+    return true;
+  });
+
+  // Datos filtrados finales
+  const filteredData = dateFiltered;
 
   // Filtrar filas según rol
-  const displayedItems = currentItems.filter((item) => {
+  const roleFiltered = filteredData.filter((item) => {
     if (user?.role === "administrador") return true; // Admin ve todo
     if (user?.role === "ingeniero") return item.ingeniero?.id === user.user.id; // Ingeniero solo su info
     return false;
   });
+
+  // Paginación
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const displayedItems = roleFiltered.slice(indexOfFirstItem, indexOfLastItem);
 
   const today = new Date();
   const alertItems =
@@ -174,8 +224,54 @@ const Mantenimientos = () => {
   return (
     <div className="right-content">
       <div className="card mt-2">
-        <div className="table-header d-flex justify-content-end align-items-center mt-2 mb-3 p-2">
-          <Search onSearch={handleSearch} />
+        <div className="table-header d-flex justify-content-between align-items-center mt-2 mb-3 p-2">
+          <Box sx={{ display: "flex", gap: 2, alignItems: "center", flexWrap: "wrap" }}>
+            <Search onSearch={handleSearch} />
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+              <DateRangeIcon sx={{ color: "var(--color-primary)" }} />
+              <TextField
+                type="date"
+                label="Fecha Inicio"
+                value={fechaInicio}
+                onChange={(e) => setFechaInicio(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                size="small"
+                sx={{
+                  width: 180,
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "var(--color-primary)" },
+                    "&:hover fieldset": { borderColor: "var(--color-primary)" },
+                    "&.Mui-focused fieldset": { borderColor: "var(--color-secondary)" },
+                  },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "var(--color-secondary)" },
+                }}
+              />
+              <TextField
+                type="date"
+                label="Fecha Fin"
+                value={fechaFin}
+                onChange={(e) => setFechaFin(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                size="small"
+                sx={{
+                  width: 180,
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "var(--color-primary)" },
+                    "&:hover fieldset": { borderColor: "var(--color-primary)" },
+                    "&.Mui-focused fieldset": { borderColor: "var(--color-secondary)" },
+                  },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "var(--color-secondary)" },
+                }}
+              />
+              {(fechaInicio || fechaFin) && (
+                <Tooltip title="Limpiar filtro de fechas">
+                  <IconButton onClick={handleClearDates} color="primary" size="small">
+                    <ClearIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Box>
+          </Box>
           {user?.role === "administrador" && (
             <Link to="/agregar_registro_mantenimiento">
               <Button
@@ -322,7 +418,7 @@ const Mantenimientos = () => {
         </div>
 
         <Paginacion
-          totalItems={filteredData.length}
+          totalItems={roleFiltered.length}
           itemsPerPage={itemsPerPage}
           currentPage={currentPage}
           handlePageChange={handlePageChange}

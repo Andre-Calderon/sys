@@ -110,7 +110,6 @@ const Departamento = () => {
               <table className="styled-table text-center">
                 <thead>
                   <tr className="text-center">
-                    <th>ID</th>
                     <th>Nombre del Departamento</th>
                     <th>Áreas Específicas</th>
                     <th>Fecha y Hora de Alta</th>
@@ -121,7 +120,6 @@ const Departamento = () => {
                   {currentItems.length ? (
                     currentItems.map((dep) => (
                       <tr key={dep.id}>
-                        <td>{dep.id}</td>
                         <td>{dep.nombre}</td>
                         <td>
                           {dep.areas && dep.areas.length ? (
@@ -168,7 +166,7 @@ const Departamento = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="5">No se encontraron resultados.</td>
+                      <td colSpan="4">No se encontraron resultados.</td>
                     </tr>
                   )}
                 </tbody>
