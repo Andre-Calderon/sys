@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   TextField,
@@ -8,22 +8,39 @@ import {
   Alert,
   CircularProgress,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { API_URL } from "../../config/api";
 
 const Add_Atraso = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [formValues, setFormValues] = useState({
     disp_med_id: "",
+    ticket: "",
+    mantenimiento_id: "",
     ing_id: "",
-    fecha_creacion: "",
-    prioridad: "Alta",
+    fecha_fin: "",
     estado: "pendiente",
     descripcion_problema: "",
   });
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [validationErrors, setValidationErrors] = useState({});
+
+  // Si viene desde mantenimientos, prellenar datos
+  useEffect(() => {
+    if (location.state?.mantenimiento) {
+      const mantenimiento = location.state.mantenimiento;
+      setFormValues((prev) => ({
+        ...prev,
+        ticket: mantenimiento.ticket || "",
+        mantenimiento_id: mantenimiento.id || "",
+        disp_med_id: mantenimiento.disp_med_id || "",
+        ing_id: mantenimiento.ingeniero?.id || "",
+      }));
+    }
+  }, [location.state]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,6 +52,7 @@ const Add_Atraso = () => {
     setLoading(true);
     setSuccessMsg("");
     setErrorMsg("");
+    setValidationErrors({});
 
     try {
       const token = localStorage.getItem("token");
@@ -44,17 +62,31 @@ const Add_Atraso = () => {
         return;
       }
 
-      const response = await fetch(
-        `${API_URL}/tickets`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ ...formValues, prioridad: "Alta" }),
-        }
-      );
+      // Preparar el body según la documentación
+      // Solo enviar ticket o mantenimiento_id, no ambos
+      const body = {
+        disp_med_id: formValues.disp_med_id,
+        ing_id: formValues.ing_id,
+        fecha_fin: formValues.fecha_fin,
+        estado: formValues.estado || "pendiente",
+        descripcion_problema: formValues.descripcion_problema,
+      };
+
+      // Agregar ticket o mantenimiento_id (prioridad a ticket si ambos están)
+      if (formValues.ticket) {
+        body.ticket = formValues.ticket;
+      } else if (formValues.mantenimiento_id) {
+        body.mantenimiento_id = formValues.mantenimiento_id;
+      }
+
+      const response = await fetch(`${API_URL}/tickets`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
 
       const result = await response.json();
 
@@ -63,16 +95,27 @@ const Add_Atraso = () => {
 
         setFormValues({
           disp_med_id: "",
+          ticket: "",
+          mantenimiento_id: "",
           ing_id: "",
-          fecha_creacion: "",
-          prioridad: "Alta",
+          fecha_fin: "",
           estado: "pendiente",
           descripcion_problema: "",
         });
+        setValidationErrors({});
 
         setTimeout(() => navigate("/mantenimientos_atrasados"), 1500);
       } else {
-        setErrorMsg(result.message || "Error al crear el ticket");
+        // Manejar errores de validación
+        if (result.errors) {
+          setValidationErrors(result.errors);
+          const errorMessages = Object.values(result.errors)
+            .flat()
+            .join(", ");
+          setErrorMsg(errorMessages);
+        } else {
+          setErrorMsg(result.message || "Error al crear el ticket");
+        }
       }
     } catch (error) {
       console.error(error);
@@ -99,14 +142,16 @@ const Add_Atraso = () => {
           <Divider className="mb-3" />
 
           <div className="row g-3">
-            <div className="col-12 col-md-4">
+            <div className="col-12 col-md-6">
               <TextField
                 required
-                type="number"
-                label="ID del equipo"
-                name="disp_med_id"
-                value={formValues.disp_med_id}
+                type="text"
+                label="Folio del Mantenimiento (Ticket)"
+                name="ticket"
+                value={formValues.ticket}
                 onChange={handleChange}
+                helperText={validationErrors.ticket?.[0] || "Ingrese el folio del mantenimiento"}
+                error={!!validationErrors.ticket}
                 fullWidth
                 sx={{
                   "& .MuiOutlinedInput-root": {
@@ -119,7 +164,49 @@ const Add_Atraso = () => {
               />
             </div>
 
-            <div className="col-12 col-md-4">
+            <div className="col-12 col-md-6">
+              <TextField
+                type="number"
+                label="ID del Mantenimiento (Opcional)"
+                name="mantenimiento_id"
+                value={formValues.mantenimiento_id}
+                onChange={handleChange}
+                helperText="Solo si no tiene el folio"
+                fullWidth
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "var(--color-primary)" },
+                    "&:hover fieldset": { borderColor: "var(--color-primary)" },
+                    "&.Mui-focused fieldset": { borderColor: "var(--color-secondary)" },
+                  },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "var(--color-secondary)" },
+                }}
+              />
+            </div>
+
+            <div className="col-12 col-md-6">
+              <TextField
+                required
+                type="number"
+                label="ID del equipo"
+                name="disp_med_id"
+                value={formValues.disp_med_id}
+                onChange={handleChange}
+                helperText={validationErrors.disp_med_id?.[0]}
+                error={!!validationErrors.disp_med_id}
+                fullWidth
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "var(--color-primary)" },
+                    "&:hover fieldset": { borderColor: "var(--color-primary)" },
+                    "&.Mui-focused fieldset": { borderColor: "var(--color-secondary)" },
+                  },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "var(--color-secondary)" },
+                }}
+              />
+            </div>
+
+            <div className="col-12 col-md-6">
               <TextField
                 required
                 type="number"
@@ -127,6 +214,34 @@ const Add_Atraso = () => {
                 name="ing_id"
                 value={formValues.ing_id}
                 onChange={handleChange}
+                helperText={validationErrors.ing_id?.[0]}
+                error={!!validationErrors.ing_id}
+                fullWidth
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "var(--color-primary)" },
+                    "&:hover fieldset": { borderColor: "var(--color-primary)" },
+                    "&.Mui-focused fieldset": { borderColor: "var(--color-secondary)" },
+                  },
+                  "& .MuiInputLabel-root.Mui-focused": { color: "var(--color-secondary)" },
+                }}
+              />
+            </div>
+
+            <div className="col-12 col-md-6">
+              <TextField
+                required
+                type="date"
+                label="Nueva Fecha de Finalización"
+                name="fecha_fin"
+                value={formValues.fecha_fin}
+                onChange={handleChange}
+                InputLabelProps={{ shrink: true }}
+                helperText={validationErrors.fecha_fin?.[0] || "Debe ser posterior a la fecha original del mantenimiento"}
+                error={!!validationErrors.fecha_fin}
+                inputProps={{
+                  min: new Date().toISOString().split('T')[0] // Mínimo hoy
+                }}
                 fullWidth
                 sx={{
                   "& .MuiOutlinedInput-root": {
@@ -148,6 +263,8 @@ const Add_Atraso = () => {
                 name="descripcion_problema"
                 value={formValues.descripcion_problema}
                 onChange={handleChange}
+                helperText={validationErrors.descripcion_problema?.[0]}
+                error={!!validationErrors.descripcion_problema}
                 fullWidth
                 sx={{
                   "& .MuiOutlinedInput-root": {

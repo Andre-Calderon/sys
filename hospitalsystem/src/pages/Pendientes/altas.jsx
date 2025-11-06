@@ -1,148 +1,185 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
-import { Button } from "@mui/material";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import { Typography, CircularProgress } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import BuildIcon from "@mui/icons-material/Build";
 import Search from "../../components/Search";
 import Paginacion from "../../components/Pagination";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
+import { API_URL } from "../../config/api";
+import { useAuth } from "../../context/AuthContext";
 
 const Altas_Pendientes = () => {
+  const [mantenimientos, setMantenimientos] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const itemsPerPage = 10;
+  const { user } = useAuth();
 
-  const data = [
-    {
-      id: 1,
-      descripcion: "UPS Eaton 9PX",
-      departamento: "Infraestructura",
-      area: "Centro de Datos",
-      prioridad: "Alta",
-      status:"En proceso",
-      fechaProgramada: "10-04-2025",
-      ingeniero: "Carlos López",
-      estado: "Pendiente"
-    },
-    {
-      id: 2,
-      descripcion: "Switch Cisco Catalyst 9200",
-      departamento: "Redes",
-      area: "Sala de Comunicaciones",
-      prioridad: "Media",
-      status:"En espera",
-      fechaProgramada: "15-04-2025",
-      ingeniero: "María González",
-      estado: "Pendiente"
-    },
-    {
-      id: 3,
-      descripcion: "Laptop Dell Latitude 5420",
-      departamento: "TI",
-      area: "Oficina Principal",
-      prioridad: "Baja",
-      status:"En espera",
-      fechaProgramada: "18-04-2025",
-      ingeniero: "Juan Pérez",
-      estado: "Pendiente"
+  // Obtener mantenimientos
+  const fetchMantenimientos = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const res = await fetch(`${API_URL}/mantenimientos`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Error al obtener mantenimientos");
+
+      const data = await res.json();
+      if (!data.has_error) {
+        // Filtrar solo los pendientes
+        const pendientes = (data.data || []).filter(
+          (item) => item.estado?.toLowerCase() === "pendiente"
+        );
+        setMantenimientos(pendientes.slice().reverse());
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-  ];
-
-  const handleSearch = (searchText) => {
-    setSearchTerm(searchText);
   };
 
-  const filteredData = data.filter((item) =>
-    Object.values(item).some((value) =>
-      value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
+  useEffect(() => {
+    fetchMantenimientos();
+  }, []);
 
+  const handleSearch = (searchText) => setSearchTerm(searchText);
+  const handlePageChange = (event, value) => setCurrentPage(value);
+
+  // Filtrar por búsqueda
+  const searchFiltered = mantenimientos.filter((item) => {
+    const term = searchTerm.toLowerCase();
+
+    const idMatch = item.id.toString().includes(term);
+    const ticketMatch = item.ticket?.toString().toLowerCase().includes(term);
+    const descripcionMatch = item.descripcion?.toLowerCase().includes(term);
+    const estadoMatch = item.estado?.toLowerCase().includes(term);
+    const tipoMatch = item.tipo_servicio?.toLowerCase().includes(term);
+    const ingenieroMatch = item.ingeniero
+      ? `${item.ingeniero.nombres} ${item.ingeniero.apellido_paterno} ${item.ingeniero.apellido_materno}`
+          .toLowerCase()
+          .includes(term)
+      : false;
+    const fechaInicioMatch = item.fecha_inicio
+      ? new Date(item.fecha_inicio).toLocaleDateString("es-MX").includes(term)
+      : false;
+    const fechaFinMatch = item.fecha_fin
+      ? new Date(item.fecha_fin).toLocaleDateString("es-MX").includes(term)
+      : false;
+    const solucion = item.solucion?.toLowerCase().includes(term);
+    
+    return (
+      idMatch ||
+      ticketMatch ||
+      descripcionMatch ||
+      estadoMatch ||
+      tipoMatch ||
+      ingenieroMatch ||
+      fechaInicioMatch ||
+      fechaFinMatch ||
+      solucion
+    );
+  });
+
+  // Filtrar filas según rol
+  const roleFiltered = searchFiltered.filter((item) => {
+    if (user?.role === "administrador") return true; // Admin ve todo
+    if (user?.role === "ingeniero") return item.ingeniero?.id === user.user.id; // Ingeniero solo su info
+    return false;
+  });
+
+  // Datos filtrados finales
+  const filteredData = roleFiltered;
+
+  // Paginación
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
-
-  const handlePageChange = (event, value) => {
-    setCurrentPage(value);
-  };
-
-  const handleAtenderFalla = (id) => {
-    alert(`Atendiendo falla del mantenimiento con ID: ${id}`);
-  };
 
   return (
     <div className="right-content">
         <div className="card">
         <div className="table-header d-flex justify-content-end align-items-center mt-2 mb-3 p-2">
-            <Search onSearch={handleSearch} className="search-bar" />
-            <Link to="/agregar_atraso">
-              <Button variant="contained" className="mx-2" color="success" endIcon={<AddCircleOutlineIcon />}>
-              Agregar
-              </Button>
-            </Link>
+          <Search onSearch={handleSearch} className="search-bar" />
         </div>
         <div className="d-flex justify-content-center align-items-center">
-            <div className="table-container">
-            <table className="styled-table text-center">
+          <div className="table-container">
+            {loading ? (
+              <div style={{ padding: 30, textAlign: "center" }}>
+                <CircularProgress />
+                <Typography mt={1}>Cargando pendientes...</Typography>
+              </div>
+            ) : (
+              <table className="styled-table text-center">
                 <thead>
-                <tr className="text-center">
-                    <th>ID</th>
+                  <tr className="text-center">
+                    <th>Ticket</th>
                     <th>Descripción</th>
-                    <th>Departamento</th>
-                    <th>Área</th>
-                    <th>Prioridad</th>
-                    <th>Status</th>
-                    <th>Fecha Programada</th>
+                    <th>Tipo de Servicio</th>
+                    <th>Estado</th>
+                    <th>Fecha Inicio</th>
+                    <th>Fecha Fin</th>
                     <th>Ingeniero Asignado</th>
                     <th>Acciones</th>
-                </tr>
+                  </tr>
                 </thead>
                 <tbody>
-                {currentItems.length > 0 ? (
+                  {currentItems.length ? (
                     currentItems.map((item) => (
-                    <tr key={item.id}>
-                        <td>{item.id}</td>
-                        <td>{item.descripcion}</td>
-                        <td>{item.departamento}</td>
-                        <td>{item.area}</td>
-                        <td>{item.prioridad}</td>
-                        <td>{item.status}</td>
-                        <td>{item.fechaProgramada}</td>
-                        <td>{item.ingeniero}</td>
+                      <tr key={item.id}>
+                        <td>{item.ticket || item.id}</td>
+                        <td>{item.descripcion || "—"}</td>
+                        <td>{item.tipo_servicio || "—"}</td>
+                        <td>{item.estado || "—"}</td>
                         <td>
-                        <Stack direction="row" spacing={1} justifyContent="center">
-                            <Tooltip title="Editar">
-                            <IconButton color="primary">
-                                <EditIcon />
-                            </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Eliminar">
-                            <IconButton color="error">
-                                <DeleteIcon />
-                            </IconButton>
-                            </Tooltip>
-                        </Stack>
+                          {item.fecha_inicio
+                            ? new Date(item.fecha_inicio).toLocaleDateString("es-MX")
+                            : "—"}
                         </td>
-                    </tr>
+                        <td>
+                          {item.fecha_fin
+                            ? new Date(item.fecha_fin).toLocaleDateString("es-MX")
+                            : "—"}
+                        </td>
+                        <td>
+                          {item.ingeniero
+                            ? `${item.ingeniero.nombres} ${item.ingeniero.apellido_paterno} ${item.ingeniero.apellido_materno}`
+                            : "—"}
+                        </td>
+                        <td>
+                          <Stack direction="row" spacing={1} justifyContent="center">
+                            <Link to={`/editar_registro_mantenimiento/${item.id}`}>
+                              <Tooltip title="Editar">
+                                <IconButton color="primary">
+                                  <EditIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </Link>
+                          </Stack>
+                        </td>
+                      </tr>
                     ))
-                ) : (
+                  ) : (
                     <tr>
-                    <td colSpan="8">No se encontraron resultados.</td>
+                      <td colSpan="8">No se encontraron resultados.</td>
                     </tr>
-                )}
+                  )}
                 </tbody>
-            </table>
-            </div>
+              </table>
+            )}
+          </div>
         </div>
         <Paginacion
-            totalItems={filteredData.length}
-            itemsPerPage={itemsPerPage}
-            currentPage={currentPage}
-            handlePageChange={handlePageChange}
+          totalItems={filteredData.length}
+          itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
+          handlePageChange={handlePageChange}
         />
         </div>
     </div>

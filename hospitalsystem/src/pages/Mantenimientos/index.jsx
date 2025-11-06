@@ -294,16 +294,16 @@ const Mantenimientos = () => {
                     key={item.id}
                     severity={type}
                     action={
-                      <Link to="/agregar_atraso">
-                      <Button
-                        color="inherit"
-                        size="small"
-                        onClick={() => {
-                          console.log("Generar ticket para:", item.ticket || item.id);
-                        }}
+                      <Link 
+                        to="/agregar_atraso" 
+                        state={{ mantenimiento: item }}
                       >
-                        Generar Ticket
-                      </Button>
+                        <Button
+                          color="inherit"
+                          size="small"
+                        >
+                          Generar Ticket
+                        </Button>
                       </Link>
                     }
                   >
