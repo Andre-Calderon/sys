@@ -109,7 +109,7 @@ const Atrasados = () => {
 // FILTRADO SEGÚN ROL
 const roleFilteredTickets =
   user?.role === "ingeniero"
-    ? filteredData.filter((t) => t.ing_id === user.user.id) // solo sus tickets
+    ? filteredData.filter((t) => t.ing_id === user.user.id_ingeniero || t.ing_id === user.user.id) // solo sus tickets
     : filteredData; // administradores u otros roles ven todo
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -146,11 +146,10 @@ const roleFilteredTickets =
               <table className="styled-table text-center">
                 <thead>
                   <tr className="text-center">
-                    <th>ID</th>
-                    <th>Dispositivo ID</th>
-                    <th>Ingeniero ID</th>
+                    <th>Folio Mantenimiento</th>
+                    <th>No. Serie del Equipo</th>
+                    <th>Ingeniero</th>
                     <th>Fecha creación</th>
-                    <th>Prioridad</th>
                     <th>Estado</th>
                     <th>Descripción</th>
                     <th>Acciones</th>
@@ -160,13 +159,12 @@ const roleFilteredTickets =
                   {currentItems.length ? (
                     currentItems.map((t) => (
                       <tr key={t.id}>
-                        <td>{t.id}</td>
-                        <td>{t.disp_med_id}</td>
-                        <td>{t.ing_id}</td>
-                        <td>{t.fecha_creacion}</td>
-                        <td>{t.prioridad}</td>
-                        <td>{t.estado}</td>
-                        <td>{t.descripcion_problema}</td>
+                        <td>{t.folio_mantenimiento || "—"}</td>
+                        <td>{t.no_serial || "—"}</td>
+                        <td>{t.nombre_ingeniero || "—"}</td>
+                        <td>{t.fecha_creacion || "—"}</td>
+                        <td>{t.estado || "—"}</td>
+                        <td>{t.descripcion_problema || "—"}</td>
                         <td>
                           <Stack direction="row" spacing={1} justifyContent="center">
                             <Link to={`/editar_atraso/${t.id}`}>
@@ -187,7 +185,7 @@ const roleFilteredTickets =
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="8">No se encontraron resultados.</td>
+                      <td colSpan="7">No se encontraron resultados.</td>
                     </tr>
                   )}
                 </tbody>

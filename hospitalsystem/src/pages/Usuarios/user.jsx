@@ -155,6 +155,7 @@ const Ingenieros = () => {
                     <th>Email</th>
                     <th>Teléfono</th>
                     <th>Género</th>
+                    <th>Fecha de Alta</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
@@ -169,6 +170,7 @@ const Ingenieros = () => {
                         <td>{item.email}</td>
                         <td>{item.telefono}</td>
                         <td>{item.genero ? "Masculino" : "Femenino"}</td>
+                        <td>{item.created_at ? new Date(item.created_at).toLocaleString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true }) : "—"}</td>
                         <td>
                           <Stack direction="row" spacing={1} justifyContent="center">
                             <Link to={`/editar_ingeniero/${item.id}`}>
@@ -200,7 +202,7 @@ const Ingenieros = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="8">No se encontraron resultados.</td>
+                      <td colSpan="9">No se encontraron resultados.</td>
                     </tr>
                   )}
                 </tbody>

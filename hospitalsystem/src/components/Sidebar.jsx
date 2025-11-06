@@ -13,6 +13,15 @@ import "../assets/styles/sidebar.css";
 
 // OPCIÓN A: Modular por categorías - Registros divididos en menús principales
 const menuItems_OPCION_A = [
+  // MÓDULO 0: Dashboard
+  { type: "divider", label: "Inicio" },
+  {
+    text: "Dashboard",
+    icon: <Dashboard style={{color:"var(--color-primary)"}} />, 
+    path: "/Inicio",
+    roles:["administrador","ingeniero"],
+    module: "inicio"
+  },
   // MÓDULO 1: Operaciones Activas
   { type: "divider", label: "Operaciones" },
   {

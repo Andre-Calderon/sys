@@ -12,7 +12,6 @@ import {
   Delete as DeleteIcon,
   Edit as EditIcon,
   AddCircleOutline as AddCircleOutlineIcon,
-  PieChart as PieChartIcon,
 } from "@mui/icons-material";
 import Swal from "sweetalert2";
 import Search from "../components/Search";
@@ -129,11 +128,6 @@ const Dashboard = () => {
       <div className="card mt-2">
         <div className="table-header d-flex justify-content-end align-items-center mt-2 mb-3 p-2">
           <Search onSearch={handleSearch} />
-          <Link to="/grafica_pastel">
-            <Button color="secondary" className="mx-2" endIcon={<PieChartIcon />}>
-              Ver gráficas
-            </Button>
-          </Link>
           <Link to="/agregar_registro">
             <Button
               variant="contained"
@@ -157,13 +151,12 @@ const Dashboard = () => {
               <table className="styled-table text-center">
                 <thead>
                   <tr className="text-center">
-                    <th>ID</th>
+                    <th>No. Serie</th>
                     <th>Equipo</th>
                     <th>Fabricante</th>
                     <th>Modelo</th>
-                    <th>No. Serie</th>
-                    <th>Área</th>
                     <th>Departamento</th>
+                    <th>Área Específica</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
@@ -171,13 +164,12 @@ const Dashboard = () => {
                   {currentItems.length ? (
                     currentItems.map((item) => (
                       <tr key={item.id}>
-                        <td>{item.id}</td>
+                        <td>{item.no_serial}</td>
                         <td>{item.equipo}</td>
                         <td>{item.fabricante}</td>
                         <td>{item.modelo}</td>
-                        <td>{item.no_serial}</td>
-                        <td>{item.area?.nombre}</td>
                         <td>{item.departamento?.nombre}</td>
+                        <td>{item.area?.nombre}</td>
                         <td>
                           <Stack direction="row" spacing={1} justifyContent="center">
                             <Link to={`/editar_dispositivo/${item.id}`}>
@@ -209,7 +201,7 @@ const Dashboard = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="8">No se encontraron resultados.</td>
+                      <td colSpan="7">No se encontraron resultados.</td>
                     </tr>
                   )}
                 </tbody>

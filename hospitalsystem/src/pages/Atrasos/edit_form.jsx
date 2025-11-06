@@ -22,7 +22,7 @@ const Edit_Atraso = () => {
     disp_med_id: "",
     ing_id: "",
     fecha_creacion: "",
-    prioridad: "",
+    prioridad: "Alta",
     estado: "",
     descripcion_problema: "",
   });
@@ -45,7 +45,7 @@ const Edit_Atraso = () => {
           disp_med_id: data.data.disp_med_id || "",
           ing_id: data.data.ing_id || "",
           fecha_creacion: data.data.fecha_creacion || "",
-          prioridad: data.data.prioridad || "",
+          prioridad: "Alta",
           estado: data.data.estado || "",
           descripcion_problema: data.data.descripcion_problema || "",
         });
@@ -76,7 +76,7 @@ const Edit_Atraso = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(formValues),
+          body: JSON.stringify({ ...formValues, prioridad: "Alta" }),
         }
       );
 
@@ -163,32 +163,6 @@ const Edit_Atraso = () => {
                   "& .MuiInputLabel-root.Mui-focused": { color: "var(--color-secondary)" },
                 }}
               />
-            </div>
-
-            <div className="col-12 col-md-4">
-              <FormControl fullWidth>
-                <InputLabel sx={{ "&.Mui-focused": { color: "var(--color-secondary)" } }}>
-                  Prioridad
-                </InputLabel>
-                <Select
-                  name="prioridad"
-                  value={formValues.prioridad}
-                  onChange={handleChange}
-                  label="Prioridad"
-                  sx={{
-                    "&.MuiOutlinedInput-root": {
-                      "& fieldset": { borderColor: "var(--color-primary)" },
-                      "&:hover fieldset": { borderColor: "var(--color-primary)" },
-                      "&.Mui-focused fieldset": { borderColor: "var(--color-secondary)" },
-                    }
-                  }}
-                  MenuProps={{ PaperProps: { sx: { bgcolor: "white" } } }}
-                >
-                  <MenuItem value="Alta">Alta</MenuItem>
-                  <MenuItem value="Media">Media</MenuItem>
-                  <MenuItem value="Baja">Baja</MenuItem>
-                </Select>
-              </FormControl>
             </div>
 
             <div className="col-12 col-md-4">

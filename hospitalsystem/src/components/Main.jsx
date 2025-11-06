@@ -1,105 +1,201 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { IconButton, Button, Tooltip, Stack } from "@mui/material";
+import { IconButton, Button, Tooltip, Stack, CircularProgress, Typography, Alert } from "@mui/material";
 import "../assets/styles/cardAdminHome.css";
 import PersonIcon from "@mui/icons-material/Person";
 import ComputerIcon from "@mui/icons-material/Computer";
 import BuildIcon from "@mui/icons-material/Build";
 import ErrorIcon from '@mui/icons-material/Error';
-
-// Datos iniciales de áreas
-const areasData = [
-  { id: 1, nombres: "Pedro Iñigo", apellidos: "Ramírez Uc", mantenimientos: "25", rendimiento: "11%" },
-  { id: 2, nombres: "Carlos Eduardo", apellidos: "Sánchez Ibarra", mantenimientos: "19", rendimiento: "9%" },
-  { id: 3, nombres: "Emilio Enrique", apellidos: "Martínez Cuevas", mantenimientos: "18", rendimiento: "8%" },
-];
+import StarIcon from '@mui/icons-material/Star';
+import { API_URL } from "../config/api";
 
 const Home_Admin = () => {
-      const [currentPage, setCurrentPage] = useState(1);
-      const [searchTerm, setSearchTerm] = useState("");
-      const itemsPerPage = 10;
-    
-      const handleSearch = (searchText) => setSearchTerm(searchText);
-    
-      // Filtrar los datos según el término de búsqueda
-      const filteredData = areasData.filter((item) =>
-        Object.values(item).some((value) =>
-          value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
-    
-      const indexOfLastItem = currentPage * itemsPerPage;
-      const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-      const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
-    
-      const handlePageChange = (event, value) => setCurrentPage(value);
-    return(
-        <div className="right-content">
-            <div className="row">
-                <div className="col-md-4 col-xl-3">
-                    <div className="card bg-c-blue order-card">
-                        <div className="card-block">
-                            <h6 className="m-b-20">Mejor desempeño</h6>
-                            <h2 className="text-right d-flex justify-content-between align-items-center">
-                                <PersonIcon /> <span>25</span>
-                            </h2>
-                            <p className="m-b-0">Ing. Pedro Ramírez<span className="f-right">11%</span></p>
-                        </div>
-                    </div>
-                </div>
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const itemsPerPage = 10;
 
-                <div className="col-md-4 col-xl-3">
-                    <div className="card bg-c-green order-card">
-                        <div className="card-block">
-                            <h6 className="m-b-20">Servicios realizados</h6>
-                            <h2 className="text-right d-flex justify-content-between align-items-center">
-                                <BuildIcon /> <span>220</span>
-                            </h2>
-                            <p className="m-b-0">Completados<span className="f-right">220</span></p>
-                        </div>
-                    </div>
-                </div>
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
-                <div className="col-md-4 col-xl-3">
-                    <div className="card bg-c-yellow order-card">
-                        <div className="card-block">
-                            <h6 className="m-b-20">Mantenimientos correctivos</h6>
-                            <h2 className="text-right d-flex justify-content-between align-items-center">
-                                <BuildIcon /> <span>100</span>
-                            </h2>
-                            <p className="m-b-0">Porcentaje<span className="f-right">48%</span></p>
-                        </div>
-                    </div>
-                </div>
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Usuario no autenticado");
+        setLoading(false);
+        return;
+      }
 
-                <div className="col-md-4 col-xl-3">
-                    <div className="card bg-c-pink order-card">
-                        <div className="card-block">
-                            <h6 className="m-b-20">Equipo de mayor uso</h6>
-                            <h2 className="text-right d-flex justify-content-between align-items-center">
-                                <ComputerIcon /> <span>Rayos X</span>
-                            </h2>
-                            <p className="m-b-0">Porcentaje de uso<span className="f-right">35%</span></p>
-                        </div>
-                    </div>
-                </div>
+      const response = await fetch(`${API_URL}/dashboard`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Error al obtener datos del dashboard");
+
+      const result = await response.json();
+      if (!result.has_error && result.data) {
+        setDashboardData(result.data);
+      } else {
+        throw new Error(result.message || "Error al obtener datos");
+      }
+    } catch (err) {
+      console.error("Error en fetchDashboardData:", err);
+      setError(err.message || "Error al cargar el dashboard");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = (searchText) => setSearchTerm(searchText);
+  const handlePageChange = (event, value) => setCurrentPage(value);
+
+  // Obtener top 3 ingenieros mejor calificados
+  const topIngenieros = dashboardData?.calificaciones?.por_ingeniero || [];
+  const filteredData = topIngenieros.filter((item) =>
+    Object.values(item).some((value) =>
+      value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredData.slice(0, 3); // Solo mostrar top 3
+
+  if (loading) {
+    return (
+      <div className="right-content">
+        <div style={{ padding: 50, textAlign: "center" }}>
+          <CircularProgress />
+          <Typography mt={2}>Cargando dashboard...</Typography>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !dashboardData) {
+    return (
+      <div className="right-content">
+        <Alert severity="error" sx={{ m: 2 }}>{error}</Alert>
+      </div>
+    );
+  }
+
+  const kpis = dashboardData?.kpis || {};
+  const mantenimientos = dashboardData?.mantenimientos || {};
+  const ticketsAtraso = dashboardData?.tickets_atraso || {};
+  const topIngenierosData = dashboardData?.calificaciones?.por_ingeniero || [];
+  const mejorIngeniero = topIngenierosData[0] || null;
+  const ingenieros = dashboardData?.ingenieros || {};
+  const dispositivos = dashboardData?.dispositivos || {};
+  const estadisticas = dashboardData?.estadisticas_generales || {};
+  const mantenimientosPorEstado = mantenimientos.por_estado || {};
+  const mantenimientosPorTipo = mantenimientos.por_tipo_servicio || {};
+  
+  const totalPreventivos = mantenimientos.este_mes?.preventivos || 0;
+  const totalCorrectivos = mantenimientos.este_mes?.correctivos || 0;
+  const totalMantenimientos = mantenimientos.este_mes?.total || 0;
+  const porcentajeCorrectivos = totalMantenimientos > 0 ? Math.round((totalCorrectivos / totalMantenimientos) * 100) : 0;
+  
+  // Calcular porcentaje de mantenimientos activos
+  const mantenimientosFinalizados = mantenimientosPorEstado?.Finalizado || 0;
+  const mantenimientosPendientes = mantenimientosPorEstado?.Pendiente || 0;
+  const mantenimientosEnProceso = mantenimientosPorEstado?.["En proceso"] || 0;
+  const mantenimientosActivos = mantenimientosPendientes + mantenimientosEnProceso;
+  const totalMantenimientosEstado = mantenimientosFinalizados + mantenimientosActivos;
+  const porcentajeActivos = totalMantenimientosEstado > 0 ? Math.round((mantenimientosActivos / totalMantenimientosEstado) * 100) : 0;
+
+  return (
+    <div className="right-content">
+      {error && <Alert severity="error" sx={{ m: 2 }}>{error}</Alert>}
+      
+      <div className="row">
+        <div className="col-md-4 col-xl-3">
+          <div className="card bg-c-blue order-card" style={{ height: "100%", minHeight: "180px", display: "flex", flexDirection: "column" }}>
+            <div className="card-block" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+              <h6 className="m-b-20" style={{ marginBottom: "15px", fontSize: "14px" }}>Mantenimientos activos</h6>
+              <h2 className="text-right d-flex justify-content-between align-items-center" style={{ marginBottom: "15px", fontSize: "32px" }}>
+                <BuildIcon /> <span>{kpis.mantenimientos_activos || 0}</span>
+              </h2>
+              <p className="m-b-0" style={{ marginTop: "auto", fontSize: "13px" }}>
+                {mantenimientosActivos > 0 ? `${mantenimientosPendientes} Pendientes, ${mantenimientosEnProceso} En proceso` : "Sin activos"}
+                <span className="f-right">{porcentajeActivos}%</span>
+              </p>
             </div>
+          </div>
+        </div>
 
-            <div class="card text-center mt-2">
-                <div class="card-header">
-                    <ErrorIcon color="error"></ErrorIcon>
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">Servicios de mantenimiento en espera</h5>
-                    <p class="card-text">Total: <h5>10</h5></p>
-                    <Link to="/altas_pendientes">
-                      <Button variant="contained" color="secondary">Ver atrasos</Button>
-                    </Link>
-                </div>
-                <div class="card-footer text-body-secondary">
-                    Nota: Estos mantenimientos han sido atrasados de acuerdo a su nivel de prioridad o algún otro motivo de los ingenieros asigandos.
-                </div>
+        <div className="col-md-4 col-xl-3">
+          <div className="card bg-c-green order-card" style={{ height: "100%", minHeight: "180px", display: "flex", flexDirection: "column" }}>
+            <div className="card-block" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+              <h6 className="m-b-20" style={{ marginBottom: "15px", fontSize: "14px" }}>Mantenimientos este mes</h6>
+              <h2 className="text-right d-flex justify-content-between align-items-center" style={{ marginBottom: "15px", fontSize: "32px" }}>
+                <BuildIcon /> <span>{mantenimientos.este_mes?.total || kpis.mantenimientos_este_mes || 0}</span>
+              </h2>
+              <p className="m-b-0" style={{ marginTop: "auto", fontSize: "13px" }}>
+                Finalizados<span className="f-right">{kpis.mantenimientos_finalizados_mes || 0}</span>
+              </p>
             </div>
+          </div>
+        </div>
+
+        <div className="col-md-4 col-xl-3">
+          <div className="card bg-c-yellow order-card" style={{ height: "100%", minHeight: "180px", display: "flex", flexDirection: "column" }}>
+            <div className="card-block" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+              <h6 className="m-b-20" style={{ marginBottom: "15px", fontSize: "14px" }}>Tickets pendientes</h6>
+              <h2 className="text-right d-flex justify-content-between align-items-center" style={{ marginBottom: "15px", fontSize: "32px" }}>
+                <ErrorIcon /> <span>{kpis.tickets_pendientes || 0}</span>
+              </h2>
+              <p className="m-b-0" style={{ marginTop: "auto", fontSize: "13px" }}>
+                {ticketsAtraso.por_prioridad ? 
+                  `Alta: ${ticketsAtraso.por_prioridad.Alta || 0}` : "Sin datos"}
+                <span className="f-right">Total</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-md-4 col-xl-3">
+          <div className="card bg-c-pink order-card" style={{ height: "100%", minHeight: "180px", display: "flex", flexDirection: "column" }}>
+            <div className="card-block" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+              <h6 className="m-b-20" style={{ marginBottom: "15px", fontSize: "14px" }}>Calificación promedio</h6>
+              <h2 className="text-right d-flex justify-content-between align-items-center" style={{ marginBottom: "15px", fontSize: "32px" }}>
+                <StarIcon /> <span>{kpis.calificacion_promedio?.toFixed(1) || "0.0"}</span>
+              </h2>
+              <p className="m-b-0" style={{ marginTop: "auto", fontSize: "13px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {mejorIngeniero ? mejorIngeniero.nombre : "Sin calificaciones"}
+                <span className="f-right">{kpis.calificacion_promedio?.toFixed(1) || "0.0"}★</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ marginTop: "40px", marginBottom: "20px" }}>
+        <div className="card text-center">
+          <div className="card-header">
+            <ErrorIcon color="error"></ErrorIcon>
+          </div>
+          <div className="card-body">
+            <h5 className="card-title">Tickets de atraso pendientes</h5>
+            <p className="card-text">Total: <h5>{kpis.tickets_pendientes || ticketsAtraso.pendientes || 0}</h5></p>
+            <Link to="/mantenimientos_atrasados">
+              <Button variant="contained" color="secondary">Ver atrasos</Button>
+            </Link>
+          </div>
+          <div className="card-footer text-body-secondary">
+            Nota: Estos mantenimientos han sido atrasados de acuerdo a su nivel de prioridad o algún otro motivo de los ingenieros asignados.
+          </div>
+        </div>
+      </div>
 
             <div className="card mt-2">
                 <div className="table-header d-flex justify-content-end align-items-center mt-2 mb-3 p-2">
@@ -120,22 +216,20 @@ const Home_Admin = () => {
                         </tr>
                         <tr className="text-center">
                         <th>ID</th>
-                        <th>Nombres</th>
-                        <th>Apellidos</th>
-                        <th>Mantenimientos</th>
-                        <th>Rendimiento</th>
+                        <th>Nombre</th>
+                        <th>Calificaciones</th>
+                        <th>Promedio</th>
                         <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         {currentItems.length ? (
-                        currentItems.map((item) => (
-                            <tr key={item.id}>
-                            <td>{item.id}</td>
-                            <td>{item.nombres}</td>
-                            <td>{item.apellidos}</td>
-                            <td>{item.mantenimientos}</td>
-                            <td>{item.rendimiento}</td>
+                        currentItems.map((item, index) => (
+                            <tr key={item.id || index}>
+                            <td>{item.id || index + 1}</td>
+                            <td>{item.nombre || "N/A"}</td>
+                            <td>{item.total_calificaciones || 0}</td>
+                            <td>{item.promedio ? `${item.promedio.toFixed(1)}★` : "—"}</td>
                             <td>
                                 <Stack direction="row" spacing={1} justifyContent={"center"}>
                                     <Link to="/rendimiento_personal">
@@ -148,7 +242,7 @@ const Home_Admin = () => {
                         ))
                         ) : (
                         <tr>
-                            <td colSpan="6">No se encontraron resultados.</td>
+                            <td colSpan="5">No se encontraron resultados.</td>
                         </tr>
                         )}
                     </tbody>
