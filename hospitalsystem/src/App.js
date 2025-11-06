@@ -42,6 +42,7 @@ import Editar_Admin from "./pages/Administradores/edit_form";
 import Calificaciones from "./pages/Desempeños/calificaciones";
 import Calificaciones_Agregar from "./pages/Desempeños/form_add";
 import Calificaciones_Editar from "./pages/Desempeños/form_edit";
+import Mi_Perfil from "./pages/Perfil/mi_perfil";
 
 function AppContent() {
 
@@ -115,6 +116,8 @@ function AppContent() {
             <Route path="/editar_calificacion/:id" element={<Calificaciones_Editar></Calificaciones_Editar>} />
             {/* Otros */}
             <Route path="/desempeños" element={<Desempeno></Desempeno>} />
+            {/* URL's de perfil de usuario */}
+            <Route path="/mi_perfil" element={<Mi_Perfil></Mi_Perfil>} />
           </Routes>
         </div>
       </div>

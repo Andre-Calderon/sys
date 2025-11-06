@@ -21,6 +21,12 @@ const menuItems = [
     ],
   },
   {
+    text: "Seguimientos",
+    icon: <Checklist style={{color:"var(--color-primary)"}} />, 
+    path: "/seguimientos",
+    roles:["administrador","ingeniero"]
+  },
+  {
     text: "Pendientes",
     icon: <PendingActions style={{color:"var(--color-primary)"}} />, 
     path: "/altas_pendientes",
@@ -32,30 +38,24 @@ const menuItems = [
     path: "/mantenimientos_atrasados",
     roles:["administrador","ingeniero"]
   },
-    {
+  {
     text: "Calificaciones",
     icon: <Verified style={{color:"var(--color-primary)"}} />, 
     path: "/calificaciones",
     roles:["administrador","ingeniero"]
   },
-  {
-    text: "Seguimientos",
-    icon: <Checklist style={{color:"var(--color-primary)"}} />, 
-    path: "/seguimientos",
-    roles:["administrador","ingeniero"]
-  },
-  {
-    text: "Reportes",
-    icon: <BarChart style={{color:"var(--color-primary)"}} />, 
-    path: "#",
-    roles:["administrador"]
-  },
-  {
-    text: "Desempeños",
-    icon: <Assignment style={{color:"var(--color-primary)"}} />, 
-    path: "/desempeños",
-    roles:["administrador"]
-  },
+  // {
+  //   text: "Reportes",
+  //   icon: <BarChart style={{color:"var(--color-primary)"}} />, 
+  //   path: "#",
+  //   roles:["administrador"]
+  // },
+  // {
+  //   text: "Desempeños",
+  //   icon: <Assignment style={{color:"var(--color-primary)"}} />, 
+  //   path: "/desempeños",
+  //   roles:["administrador"]
+  // },
 ];
 
 const Sidebar = () => {

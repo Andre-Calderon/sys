@@ -106,7 +106,7 @@ const Header = () => {
               transformOrigin={{ horizontal: "right", vertical: "top" }}
               anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
             > 
-              <MenuItem component={Link} to="#" onClick={handleCloseMyAccDr} className="menu-link">
+              <MenuItem component={Link} to="/mi_perfil" onClick={handleCloseMyAccDr} className="menu-link">
                 <ListItemIcon>
                   <HowToRegIcon fontSize="small" />
                 </ListItemIcon>
