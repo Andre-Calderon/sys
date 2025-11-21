@@ -153,7 +153,7 @@ const Areas = () => {
                 <thead>
                   <tr className="text-center">
                     <th>Nombre del Área Específica</th>
-                    <th>Encargado</th>
+                    {/* <th>Encargado</th> */}
                     <th>Fecha de Alta</th>
                     <th>Acciones</th>
                   </tr>
@@ -163,7 +163,7 @@ const Areas = () => {
                     currentItems.map((item) => (
                       <tr key={item.id}>
                         <td>{item.nombre}</td>
-                        <td>{item.nombre_encargado}</td>
+                        {/* <td>{item.nombre_encargado}</td> */}
                         <td>
                           {new Date(item.created_at).toLocaleString("es-MX", {
                             dateStyle: "short",

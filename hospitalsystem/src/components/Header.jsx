@@ -5,15 +5,9 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import Divider from "@mui/material/Divider";
-import Settings from "@mui/icons-material/Settings";
 import Logout from "@mui/icons-material/Logout";
-import AssignmentLateIcon from "@mui/icons-material/AssignmentLate";
 import HowToRegIcon from "@mui/icons-material/HowToReg";
-import InfoIcon from "@mui/icons-material/Info";
 import logo from "../assets/img/logo.png";
-import Alert  from "@mui/material/Alert";
-import { FaHospital } from "react-icons/fa"
-import  Tooltip  from "@mui/material/Tooltip";
 import { useAuth } from "../context/AuthContext";
 
 const Header = () => {
@@ -44,15 +38,7 @@ const Header = () => {
           </Link>
         </div>
 
-        <div className="col-sm-3 d-flex align-items-center pl-4 part2 res-hide"> 
-              <Tooltip title="Área de cirugías">
-                <Alert icon={<FaHospital fontSize="inherit" />} color="secondary">
-                  Departamento: 001
-                </Alert>
-              </Tooltip>
-         </div>
-        
-        <div className="col-sm-7 justify-content-end d-flex align-items-center part3">
+        <div className="col-sm-10 justify-content-end d-flex align-items-center part3">
 
           {/** Menú de perfil */}
           <div className="myAccWrapper">

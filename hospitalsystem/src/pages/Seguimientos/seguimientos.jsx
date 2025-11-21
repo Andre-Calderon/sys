@@ -129,6 +129,78 @@ const Seguimientos = () => {
     }
   };
 
+  const normalizeString = (value) => (value || "").toLowerCase();
+
+  const getEstadoProgreso = (item) => {
+    const estadoProgreso = normalizeString(item.estado_progreso);
+    const estado = normalizeString(item.estado);
+
+    if (estadoProgreso.includes("retras") || estado.includes("retras")) return "Retrasado";
+    if (estadoProgreso.includes("final") || estado.includes("final")) return "Finalizado";
+    if (
+      estadoProgreso.includes("proceso") ||
+      estado.includes("proceso") ||
+      estado.includes("atención") ||
+      estado.includes("atencion")
+    ) {
+      return "En Atención";
+    }
+
+    return "Servicio Generado";
+  };
+
+  const finalDateReached = (item) => {
+    const dateKey = item?.tiene_atraso ? item?.fecha_fin_atraso : item?.fecha_fin;
+    if (!dateKey) return true;
+    const targetDate = new Date(dateKey);
+    const today = new Date();
+    targetDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    return targetDate <= today;
+  };
+
+  const getStatusCompleted = (item, stepStatus) => {
+    const estadoProgreso = getEstadoProgreso(item);
+    const dateReached = finalDateReached(item);
+
+    switch (stepStatus) {
+      case "Servicio Generado":
+        return (
+          estadoProgreso === "Servicio Generado" ||
+          estadoProgreso === "En Atención" ||
+          estadoProgreso === "Retrasado" ||
+          estadoProgreso === "Finalizado"
+        );
+      case "En Atención":
+        return (
+          estadoProgreso === "En Atención" ||
+          estadoProgreso === "Retrasado" ||
+          estadoProgreso === "Finalizado"
+        );
+      case "Retrasado":
+        return estadoProgreso === "Retrasado";
+      case "Finalizado":
+        return estadoProgreso === "Finalizado" && dateReached;
+      default:
+        return false;
+    }
+  };
+
+  const getProgressValue = (item) => {
+    const serviceCompleted = getStatusCompleted(item, "Servicio Generado") ? 1 : 0;
+    const attentionCompleted = getStatusCompleted(item, "En Atención") ? 1 : 0;
+    const retrasadoCompleted =
+      item?.tiene_atraso && getStatusCompleted(item, "Retrasado") ? 1 : 0;
+    const finalCompleted = getStatusCompleted(item, "Finalizado") ? 1 : 0;
+
+    const stepsTotal = item?.tiene_atraso ? 4 : 3;
+    const completedSteps =
+      serviceCompleted + attentionCompleted + retrasadoCompleted + finalCompleted;
+
+    if (!stepsTotal) return 0;
+    return Math.round((Math.min(completedSteps, stepsTotal) / stepsTotal) * 100);
+  };
+
   return (
     <div className="right-content">
       <div className="card mt-2">
@@ -201,7 +273,7 @@ const Seguimientos = () => {
                           <Box sx={{ width: "100%", minWidth: 100 }}>
                             <LinearProgress
                               variant="determinate"
-                              value={item.porcentaje_progreso || 0}
+                              value={getProgressValue(item)}
                               sx={{
                                 height: 8,
                                 borderRadius: 4,
@@ -212,7 +284,7 @@ const Seguimientos = () => {
                               }}
                             />
                             <Typography variant="caption" color="text.secondary">
-                              {item.porcentaje_progreso || 0}%
+                              {getProgressValue(item)}%
                             </Typography>
                           </Box>
                         </td>

@@ -15,6 +15,9 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import { API_URL } from "../../config/api";
 
+const capitalize = (value) =>
+  value ? value.charAt(0).toUpperCase() + value.slice(1).toLowerCase() : value;
+
 const Add_Mantenimiento = () => {
   const navigate = useNavigate();
   const { user } = useAuth(); // user.user contiene los datos del admin logueado
@@ -25,8 +28,8 @@ const Add_Mantenimiento = () => {
     disp_med_id: "",
     fecha_inicio: "",
     fecha_fin: "",
-    estado: "programado",
-    tipo_servicio: "preventivo",
+    estado: "Programado",
+    tipo_servicio: "Preventivo",
     descripcion: ""
   });
 
@@ -81,7 +84,12 @@ const Add_Mantenimiento = () => {
     const { name, value } = e.target;
     setFormValues((prev) => ({
       ...prev,
-      [name]: ["ing_id", "disp_med_id"].includes(name) ? Number(value) : value
+      [name]:
+        ["ing_id", "disp_med_id"].includes(name)
+          ? Number(value)
+          : name === "tipo_servicio"
+          ? capitalize(value)
+          : value
     }));
   };
 
@@ -105,6 +113,8 @@ const Add_Mantenimiento = () => {
         admin_id: user.user.id, // Garantiza admin logueado
         ing_id: Number(formValues.ing_id),
         disp_med_id: Number(formValues.disp_med_id),
+        estado: capitalize(formValues.estado),
+        tipo_servicio: capitalize(formValues.tipo_servicio),
       };
 
       console.log("📤 Payload a enviar:", JSON.stringify(payload, null, 2));
@@ -140,8 +150,8 @@ const Add_Mantenimiento = () => {
           disp_med_id: "",
           fecha_inicio: "",
           fecha_fin: "",
-          estado: "programado",
-          tipo_servicio: "preventivo",
+          estado: "Programado",
+          tipo_servicio: "Preventivo",
           descripcion: ""
         });
         setTimeout(() => navigate("/registros_mantenimientos"), 2000);
@@ -284,8 +294,8 @@ const Add_Mantenimiento = () => {
                   value={formValues.tipo_servicio}
                   onChange={handleChange}
                 >
-                  <MenuItem value="preventivo">Preventivo</MenuItem>
-                  <MenuItem value="correctivo">Correctivo</MenuItem>
+                  <MenuItem value="Preventivo">Preventivo</MenuItem>
+                  <MenuItem value="Correctivo">Correctivo</MenuItem>
                 </Select>
               </FormControl>
             </div>

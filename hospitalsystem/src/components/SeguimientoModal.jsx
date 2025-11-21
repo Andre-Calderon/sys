@@ -65,22 +65,41 @@ const SeguimientoModal = ({ open, onClose, mantenimientoId, ticket }) => {
     }
   };
 
+  const finalDateReached = () => {
+    if (!seguimiento) return false;
+    const dateKey = seguimiento?.tiene_atraso ? seguimiento?.fecha_fin_atraso : seguimiento?.fecha_fin;
+    if (!dateKey) return true;
+    const targetDate = new Date(dateKey);
+    const today = new Date();
+    targetDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    return targetDate <= today;
+  };
+
   const getEstadoProgreso = () => {
     if (!seguimiento) return "Servicio Generado";
-    
-    if (seguimiento.estado_progreso === "Retrasado") return "Retrasado";
-    if (seguimiento.estado_progreso === "Finalizado" || seguimiento.estado?.toLowerCase() === "finalizado") {
-      return "Finalizado";
-    }
-    if (seguimiento.estado_progreso === "En Proceso" || seguimiento.estado?.toLowerCase() === "en_proceso") {
+
+    const estadoProgreso = (seguimiento.estado_progreso || "").toLowerCase();
+    const estado = (seguimiento.estado || "").toLowerCase();
+
+    if (estadoProgreso.includes("retras") || estado.includes("retras")) return "Retrasado";
+    if (estadoProgreso.includes("final") || estado.includes("final")) return "Finalizado";
+    if (
+      estadoProgreso.includes("proceso") ||
+      estado.includes("proceso") ||
+      estado.includes("atención") ||
+      estado.includes("atencion")
+    ) {
       return "En Atención";
     }
+
     return "Servicio Generado";
   };
 
   const getStatusCompleted = (stepStatus) => {
     const estadoProgreso = getEstadoProgreso();
-    
+    const dateReached = finalDateReached();
+
     switch (stepStatus) {
       case "Servicio Generado":
         return estadoProgreso === "Servicio Generado" || 
@@ -94,7 +113,7 @@ const SeguimientoModal = ({ open, onClose, mantenimientoId, ticket }) => {
       case "Retrasado":
         return estadoProgreso === "Retrasado";
       case "Finalizado":
-        return estadoProgreso === "Finalizado";
+        return estadoProgreso === "Finalizado" && dateReached;
       default:
         return false;
     }
@@ -105,6 +124,24 @@ const SeguimientoModal = ({ open, onClose, mantenimientoId, ticket }) => {
     setErrorMsg("");
     onClose();
   };
+
+  const serviceCompleted = getStatusCompleted("Servicio Generado");
+  const attentionCompleted = getStatusCompleted("En Atención");
+  const retrasadoCompleted = seguimiento?.tiene_atraso
+    ? getStatusCompleted("Retrasado")
+    : false;
+  const finalCompleted = getStatusCompleted("Finalizado");
+
+  const totalSteps = seguimiento?.tiene_atraso ? 4 : 3;
+  const completedSteps =
+    Number(serviceCompleted) +
+    Number(attentionCompleted) +
+    Number(retrasadoCompleted) +
+    Number(finalCompleted);
+
+  const progressValue = totalSteps
+    ? Math.round((Math.min(completedSteps, totalSteps) / totalSteps) * 100)
+    : 0;
 
   return (
     <Dialog
@@ -218,7 +255,7 @@ const SeguimientoModal = ({ open, onClose, mantenimientoId, ticket }) => {
 
                 {seguimiento.tiene_atraso && (
                   <div
-                    className={`step ${getStatusCompleted("Retrasado") ? "completed" : ""}`}
+                    className={`step ${getStatusCompleted("Retrasado") ? "completed" : ""} warning-step`}
                   >
                     <div className="step-icon-wrap">
                       <div className="step-icon">
@@ -250,7 +287,7 @@ const SeguimientoModal = ({ open, onClose, mantenimientoId, ticket }) => {
                 </Typography>
                 <LinearProgress
                   variant="determinate"
-                  value={seguimiento.porcentaje_progreso || 0}
+                  value={progressValue}
                   sx={{
                     height: 10,
                     borderRadius: 5,
@@ -261,7 +298,7 @@ const SeguimientoModal = ({ open, onClose, mantenimientoId, ticket }) => {
                   }}
                 />
                 <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
-                  {seguimiento.porcentaje_progreso || 0}% completado
+                  {progressValue}% completado
                 </Typography>
               </Box>
 

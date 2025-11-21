@@ -14,48 +14,37 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import { API_URL } from "../../config/api";
 
+const capitalize = (value) =>
+  value ? value.charAt(0).toUpperCase() + value.slice(1).toLowerCase() : value;
+
 // Funciones de mapeo para estado
 const mapEstadoFromAPI = (estado) => {
-  if (!estado) return "programado";
+  if (!estado) return "Programado";
   const e = estado.toLowerCase();
-  if (e.includes("proceso")) return "en_proceso";
-  if (e.includes("final")) return "finalizado";
-  if (e.includes("program")) return "programado";
-  return "programado";
+  if (e.includes("proceso")) return "En Proceso";
+  if (e.includes("final")) return "Finalizado";
+  return "Programado";
 };
 
 const mapEstadoToAPI = (estado) => {
-  switch (estado) {
-    case "en_proceso":
-      return "En proceso";
-    case "finalizado":
-      return "Finalizado";
-    case "programado":
-      return "Programado";
-    default:
-      return estado;
-  }
+  const normalized = (estado || "").toLowerCase();
+  if (normalized.includes("proceso")) return "En proceso";
+  if (normalized.includes("final")) return "Finalizado";
+  return "Programado";
 };
 
 // Funciones de mapeo para tipo_servicio
 const mapServicioFromAPI = (tipo) => {
-  if (!tipo) return "preventivo";
+  if (!tipo) return "Preventivo";
   const t = tipo.toLowerCase();
-  if (t.includes("cor")) return "correctivo";
-  if (t.includes("pre")) return "preventivo";
-  // Si viene algo raro como "ratione", lo forzamos a preventivo
-  return "preventivo";
+  if (t.includes("cor")) return "Correctivo";
+  return "Preventivo";
 };
 
 const mapServicioToAPI = (tipo) => {
-  switch (tipo) {
-    case "correctivo":
-      return "correctivo";
-    case "preventivo":
-      return "preventivo";
-    default:
-      return "preventivo";
-  }
+  const t = (tipo || "").toLowerCase();
+  if (t.includes("cor")) return "Correctivo";
+  return "Preventivo";
 };
 
 const Edit_Mantenimiento = () => {
@@ -69,8 +58,8 @@ const Edit_Mantenimiento = () => {
     disp_med_id: "",
     fecha_inicio: "",
     fecha_fin: "",
-    estado: "programado",
-    tipo_servicio: "preventivo",
+    estado: "Programado",
+    tipo_servicio: "Preventivo",
     descripcion: "",
     solucion: "",
   });
@@ -153,7 +142,12 @@ const Edit_Mantenimiento = () => {
     const { name, value } = e.target;
     setFormValues((prev) => ({
       ...prev,
-      [name]: ["ing_id", "disp_med_id"].includes(name) ? Number(value) : value,
+      [name]:
+        ["ing_id", "disp_med_id"].includes(name)
+          ? Number(value)
+          : name === "tipo_servicio"
+          ? capitalize(value)
+          : value,
     }));
   };
 
@@ -347,8 +341,8 @@ const Edit_Mantenimiento = () => {
                     value={formValues.tipo_servicio}
                     onChange={handleChange}
                   >
-                    <MenuItem value="preventivo">Preventivo</MenuItem>
-                    <MenuItem value="correctivo">Correctivo</MenuItem>
+                    <MenuItem value="Preventivo">Preventivo</MenuItem>
+                    <MenuItem value="Correctivo">Correctivo</MenuItem>
                   </Select>
                 </FormControl>
               </div>
@@ -364,9 +358,9 @@ const Edit_Mantenimiento = () => {
                     value={formValues.estado}
                     onChange={handleChange}
                   >
-                    <MenuItem value="programado">Programado</MenuItem>
-                    <MenuItem value="en_proceso">En proceso</MenuItem>
-                    <MenuItem value="finalizado">Finalizado</MenuItem>
+                    <MenuItem value="Programado">Programado</MenuItem>
+                    <MenuItem value="En Proceso">En proceso</MenuItem>
+                    <MenuItem value="Finalizado">Finalizado</MenuItem>
                   </Select>
                 </FormControl>
               </div>
