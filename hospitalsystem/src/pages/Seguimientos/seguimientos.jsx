@@ -135,6 +135,9 @@ const Seguimientos = () => {
     const estadoProgreso = normalizeString(item.estado_progreso);
     const estado = normalizeString(item.estado);
 
+    // Si el estado es "Programado", el seguimiento debe ser "Servicio Generado"
+    if (estado.includes("programado")) return "Servicio Generado";
+
     if (estadoProgreso.includes("retras") || estado.includes("retras")) return "Retrasado";
     if (estadoProgreso.includes("final") || estado.includes("final")) return "Finalizado";
     if (

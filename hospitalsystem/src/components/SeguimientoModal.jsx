@@ -82,6 +82,9 @@ const SeguimientoModal = ({ open, onClose, mantenimientoId, ticket }) => {
     const estadoProgreso = (seguimiento.estado_progreso || "").toLowerCase();
     const estado = (seguimiento.estado || "").toLowerCase();
 
+    // Si el estado es "Programado", el seguimiento debe ser "Servicio Generado"
+    if (estado.includes("programado")) return "Servicio Generado";
+
     if (estadoProgreso.includes("retras") || estado.includes("retras")) return "Retrasado";
     if (estadoProgreso.includes("final") || estado.includes("final")) return "Finalizado";
     if (
