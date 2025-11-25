@@ -32,9 +32,9 @@ const Altas_Pendientes = () => {
 
       const data = await res.json();
       if (!data.has_error) {
-        // Filtrar solo los pendientes
+        // Filtrar solo los pendientes (mantenimientos con estado "Programado" que están pendientes de atención)
         const pendientes = (data.data || []).filter(
-          (item) => item.estado?.toLowerCase() === "pendiente"
+          (item) => item.estado?.toLowerCase() === "programado"
         );
         setMantenimientos(pendientes.slice().reverse());
       }

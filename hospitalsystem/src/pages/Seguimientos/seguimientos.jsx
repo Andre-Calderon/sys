@@ -135,19 +135,28 @@ const Seguimientos = () => {
     const estadoProgreso = normalizeString(item.estado_progreso);
     const estado = normalizeString(item.estado);
 
+    // Priorizar el estado real del mantenimiento sobre estado_progreso del backend
     // Si el estado es "Programado", el seguimiento debe ser "Servicio Generado"
     if (estado.includes("programado")) return "Servicio Generado";
 
-    if (estadoProgreso.includes("retras") || estado.includes("retras")) return "Retrasado";
-    if (estadoProgreso.includes("final") || estado.includes("final")) return "Finalizado";
+    // Si el estado es "En proceso" o "En atención", debe ser "En Atención"
+    // (incluso si estado_progreso dice "Finalizado")
     if (
-      estadoProgreso.includes("proceso") ||
       estado.includes("proceso") ||
       estado.includes("atención") ||
       estado.includes("atencion")
     ) {
       return "En Atención";
     }
+
+    // Verificar retrasos
+    if (estadoProgreso.includes("retras") || estado.includes("retras")) return "Retrasado";
+    
+    // Solo considerar "Finalizado" si el estado también es "Finalizado"
+    if (estado.includes("final") && estadoProgreso.includes("final")) return "Finalizado";
+    
+    // Si estado_progreso dice "Finalizado" pero el estado no, no confiar en él
+    // (puede ser un error del backend)
 
     return "Servicio Generado";
   };
@@ -165,6 +174,7 @@ const Seguimientos = () => {
   const getStatusCompleted = (item, stepStatus) => {
     const estadoProgreso = getEstadoProgreso(item);
     const dateReached = finalDateReached(item);
+    const estado = normalizeString(item.estado);
 
     switch (stepStatus) {
       case "Servicio Generado":
@@ -183,7 +193,8 @@ const Seguimientos = () => {
       case "Retrasado":
         return estadoProgreso === "Retrasado";
       case "Finalizado":
-        return estadoProgreso === "Finalizado" && dateReached;
+        // Solo considerar finalizado si el estado real es "Finalizado"
+        return estado.includes("final") && estadoProgreso === "Finalizado" && dateReached;
       default:
         return false;
     }
@@ -202,6 +213,33 @@ const Seguimientos = () => {
 
     if (!stepsTotal) return 0;
     return Math.round((Math.min(completedSteps, stepsTotal) / stepsTotal) * 100);
+  };
+
+  // Función para detectar si hay atraso por fecha vencida
+  const tieneAtrasoPorFecha = (item) => {
+    // Si ya tiene un atraso registrado, retornar true
+    if (item?.tiene_atraso) return true;
+
+    // Verificar si la fecha_fin es pasada
+    if (!item?.fecha_fin) return false;
+
+    const fechaFin = new Date(item.fecha_fin);
+    const today = new Date();
+    fechaFin.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    // Si la fecha_fin ya pasó
+    if (fechaFin < today) {
+      const estado = normalizeString(item.estado);
+      // Verificar si el estado NO es finalizado
+      // Si la fecha pasó y no está finalizado, hay atraso (incluso si está "En proceso")
+      const esFinalizado = estado.includes("final");
+      
+      // Si no está finalizado, hay atraso
+      return !esFinalizado;
+    }
+
+    return false;
   };
 
   return (
@@ -233,7 +271,6 @@ const Seguimientos = () => {
                     <th>Modelo</th>
                     <th>Fecha Inicio</th>
                     <th>Fecha Fin</th>
-                    <th>Estado Progreso</th>
                     <th>Progreso</th>
                     <th>Atraso</th>
                   </tr>
@@ -266,13 +303,6 @@ const Seguimientos = () => {
                             : "—"}
                         </td>
                         <td>
-                          <Chip
-                            label={item.estado_progreso || "—"}
-                            color={getEstadoProgresoColor(item.estado_progreso)}
-                            size="small"
-                          />
-                        </td>
-                        <td>
                           <Box sx={{ width: "100%", minWidth: 100 }}>
                             <LinearProgress
                               variant="determinate"
@@ -292,7 +322,7 @@ const Seguimientos = () => {
                           </Box>
                         </td>
                         <td>
-                          {item.tiene_atraso ? (
+                          {tieneAtrasoPorFecha(item) ? (
                             <Chip label="Sí" color="warning" size="small" />
                           ) : (
                             <Chip label="No" color="default" size="small" />
@@ -302,7 +332,7 @@ const Seguimientos = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="12">No se encontraron resultados.</td>
+                      <td colSpan="11">No se encontraron resultados.</td>
                     </tr>
                   )}
                 </tbody>
